@@ -1,20 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import dts from 'vite-plugin-dts'
+import { fileURLToPath } from 'url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    dts({
-      insertTypesEntry: true,
-      outDir: '../dist',
-      include: ['src/**/*']
-    })
-  ],
+  plugins: [vue()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(__dirname, 'src/index.js'),
       name: 'VueComponentLibrary',
       fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`
     },

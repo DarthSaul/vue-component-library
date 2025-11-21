@@ -12,10 +12,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  elevated?: boolean
-}>()
+<script setup>
+defineProps({
+  elevated: {
+    type: Boolean,
+    default: false
+  }
+})
 </script>
 
 <style scoped>

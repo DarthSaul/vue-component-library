@@ -4,16 +4,18 @@
   </button>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  variant?: 'primary' | 'secondary' | 'tertiary'
-}>()
+<script setup>
+defineProps({
+  variant: {
+    type: String,
+    default: 'primary',
+    validator: (value) => ['primary', 'secondary', 'tertiary'].includes(value)
+  }
+})
 
-const emit = defineEmits<{
-  click: [event: MouseEvent]
-}>()
+const emit = defineEmits(['click'])
 
-const handleClick = (event: MouseEvent) => {
+const handleClick = (event) => {
   emit('click', event)
 }
 </script>

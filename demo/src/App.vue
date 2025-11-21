@@ -46,7 +46,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { Button, Card } from '@darthsaul/vue-component-library-ui'
 
 const handleClick = () => {
