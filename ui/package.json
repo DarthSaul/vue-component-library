@@ -1,0 +1,17 @@
+{
+  "name": "@darthsaul/vue-component-library-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "../dist/index.cjs",
+  "module": "../dist/index.js",
+  "exports": {
+    ".": {
+      "import": "../dist/index.js",
+      "require": "../dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "vite build"
+  }
+}
