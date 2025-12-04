@@ -1,0 +1,4 @@
+// Card component variables
+$card-border-radius: var(--border-radius) !default;
+$card-header-font-weight: 600 !default;
+$card-inner-border-radius: calc(var(--border-radius) - 1px) !default;

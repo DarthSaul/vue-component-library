@@ -1,0 +1,20 @@
+@import '../variables/card';
+
+/* Card component styles */
+.card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	word-wrap: break-word;
+	background-clip: border-box;
+}
+
+.card__header:first-child,
+.card__footer:last-child {
+	border-radius: $card-inner-border-radius $card-inner-border-radius 0 0;
+}
+
+.card__header {
+	font-weight: $card-header-font-weight;
+}

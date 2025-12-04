@@ -1,0 +1,26 @@
+@import '../variables/button';
+
+/* Button component styles */
+.btn {
+	display: inline-block;
+	font-weight: $btn-font-weight;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	user-select: none;
+	padding: $btn-padding-y $btn-padding-x;
+	font-size: $btn-font-size;
+	line-height: $btn-line-height;
+	border-radius: $btn-border-radius;
+	transition: $btn-transition;
+
+	&:focus {
+		outline: 0;
+		box-shadow: $btn-focus-box-shadow;
+	}
+
+	&:disabled {
+		opacity: $btn-disabled-opacity;
+		cursor: not-allowed;
+	}
+}

@@ -1,0 +1,12 @@
+// Button component variables
+$btn-font-weight: 400 !default;
+$btn-padding-y: var(--spacing-sm) !default;
+$btn-padding-x: var(--spacing-md) !default;
+$btn-font-size: var(--font-size-base) !default;
+$btn-line-height: var(--line-height-base) !default;
+$btn-border-radius: var(--border-radius) !default;
+$btn-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+	border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !default;
+
+$btn-focus-box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !default;
+$btn-disabled-opacity: 0.65 !default;
