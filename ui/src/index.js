@@ -1,9 +1,11 @@
-import Button from './components/Button/Button.vue'
-import Card from './components/Card/Card.vue'
+import Alert from './components/Alert/Alert.vue';
+import Button from './components/Button/Button.vue';
+import Card from './components/Card/Card.vue';
 
-export { Button, Card }
+export { Alert, Button, Card };
 
 export default {
-  Button,
-  Card
-}
+	Alert,
+	Button,
+	Card,
+};
