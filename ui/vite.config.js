@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vueDocgen from 'vite-plugin-vue-docgen'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), vueDocgen()],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.js'),

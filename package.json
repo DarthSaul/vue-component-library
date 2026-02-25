@@ -9,18 +9,21 @@
 		".": {
 			"import": "./dist/index.js"
 		},
-		"./styles": "./styles/index.scss"
+		"./css": "./styles/src/index.scss",
+		"./css/Button": "./styles/src/components/button.scss",
+		"./css/Card": "./styles/src/components/card.scss",
+		"./css/Alert": "./styles/src/components/alert.scss"
 	},
 	"files": [
 		"dist",
 		"styles"
 	],
 	"scripts": {
-		"dev": "npm run dev --workspace=demo",
+		"dev": "npm run dev --workspace=docs",
 		"build": "npm run build --workspace=ui",
 		"build:ui": "npm run build --workspace=ui",
-		"build:demo": "npm run build --workspace=demo",
-		"preview": "npm run preview --workspace=demo"
+		"build:docs": "npm run build --workspace=docs",
+		"preview": "npm run preview --workspace=docs"
 	},
 	"keywords": [
 		"vue",
@@ -32,7 +35,7 @@
 	"license": "ISC",
 	"workspaces": [
 		"ui",
-		"demo",
+		"docs",
 		"styles",
 		"icons"
 	],
@@ -40,6 +43,7 @@
 		"@vitejs/plugin-vue": "^6.0.2",
 		"sass": "^1.94.2",
 		"vite": "^7.2.6",
+		"vite-plugin-vue-docgen": "^0.3.4",
 		"vue": "^3.4.0"
 	},
 	"peerDependencies": {
