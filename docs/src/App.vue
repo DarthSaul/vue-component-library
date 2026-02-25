@@ -1,3 +1,11 @@
+<script setup>
+import { Button, Card } from '@darthsaul/vue-component-library-ui'
+
+const handleClick = () => {
+  console.log('Button clicked!')
+}
+</script>
+
 <template>
   <div class="demo-app">
     <header class="demo-header">
@@ -45,14 +53,6 @@
     </main>
   </div>
 </template>
-
-<script setup>
-import { Button, Card } from '@darthsaul/vue-component-library-ui'
-
-const handleClick = () => {
-  console.log('Button clicked!')
-}
-</script>
 
 <style scoped>
 .demo-app {
