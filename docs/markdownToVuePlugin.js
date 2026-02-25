@@ -8,9 +8,19 @@ export default function markdownToVuePlugin() {
     enforce: 'pre',
     transform(code, id) {
       if (!id.endsWith('.md')) return null
-      const html = md.render(code)
+
+      let scriptBlock = ''
+      let markdownSource = code
+
+      const scriptMatch = code.match(/^(<script\s+setup[^>]*>[\s\S]*?<\/script>)\n?/)
+      if (scriptMatch) {
+        scriptBlock = scriptMatch[1]
+        markdownSource = code.slice(scriptMatch[0].length)
+      }
+
+      const html = md.render(markdownSource)
       return {
-        code: `<template><div class="md-content">${html}</div></template>`,
+        code: `${scriptBlock}\n<template><div class="md-content">${html}</div></template>`,
         map: null,
       }
     },

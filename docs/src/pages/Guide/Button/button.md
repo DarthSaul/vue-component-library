@@ -1,3 +1,8 @@
+<script setup>
+import { Button } from '@darthsaul/vue-component-library-ui'
+import PropsTable from '@/components/PropsTable.vue'
+</script>
+
 # Button
 
 Triggers an action or event.
@@ -15,7 +20,4 @@ import '@darthsaul/vue-component-library/css/Button'
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `String` | `'primary'` | Visual style: `primary`, `secondary`, `tertiary` |
-| `disabled` | `Boolean` | `false` | Disables the button |
+<PropsTable :component="Button" />

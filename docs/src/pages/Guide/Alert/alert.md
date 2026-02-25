@@ -1,3 +1,8 @@
+<script setup>
+import { Alert } from '@darthsaul/vue-component-library-ui'
+import PropsTable from '@/components/PropsTable.vue'
+</script>
+
 # Alert
 
 Displays a contextual feedback message.
@@ -15,7 +20,4 @@ import '@darthsaul/vue-component-library/css/Alert'
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `String` | `'info'` | Visual style: `info`, `success`, `warning`, `error` |
-| `dismissible` | `Boolean` | `false` | Shows a close button |
+<PropsTable :component="Alert" />

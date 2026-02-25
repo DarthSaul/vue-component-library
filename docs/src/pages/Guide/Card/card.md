@@ -1,3 +1,8 @@
+<script setup>
+import { Card } from '@darthsaul/vue-component-library-ui'
+import PropsTable from '@/components/PropsTable.vue'
+</script>
+
 # Card
 
 A surface for grouping related content.
@@ -15,9 +20,7 @@ import '@darthsaul/vue-component-library/css/Card'
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `elevated` | `Boolean` | `false` | Adds a drop shadow |
+<PropsTable :component="Card" />
 
 ## Slots
 
