@@ -10,7 +10,7 @@ A surface for grouping related content.
 ## Import
 
 ```js
-import { CnbCard } from '@darthsaul/vue-component-library'
+import { Card } from '@darthsaul/vue-component-library'
 import '@darthsaul/vue-component-library/css/Card'
 ```
 
