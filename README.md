@@ -9,7 +9,7 @@ This is a monorepo containing:
 - **ui/** - Vite + Vue component library with components in `ui/src/components/[COMPONENT_NAME]/ComponentName.vue`
 - **styles/** - All component styles
 - **icons/** - Icons library (placeholder)
-- **demo/** - SPA sandbox/playground for component development
+- **docs/** - SPA sandbox/playground for component development
 
 ## Getting Started
 
@@ -21,13 +21,13 @@ npm install
 
 ## Development
 
-Run the demo app to develop components:
+Run the docs app to develop components:
 
 ```bash
 npm run dev
 ```
 
-This will start the demo app at http://localhost:3000
+This will start the docs app at http://localhost:3000
 
 ## Build
 
@@ -37,10 +37,10 @@ Build the component library:
 npm run build
 ```
 
-Build the demo app:
+Build the docs app:
 
 ```bash
-npm run build:demo
+npm run build:docs
 ```
 
 ## Available Components

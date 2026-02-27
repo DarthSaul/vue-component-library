@@ -1,0 +1,62 @@
+// Button component variables
+$btn-font-weight: 400 !default;
+$btn-padding-y: var(--spacing-sm) !default;
+$btn-padding-x: var(--spacing-md) !default;
+$btn-font-size: var(--font-size-base) !default;
+$btn-line-height: var(--line-height-base) !default;
+$btn-border-radius: var(--border-radius) !default;
+$btn-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+  border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !default;
+$btn-focus-box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !default;
+$btn-disabled-opacity: 0.65 !default;
+
+.btn {
+  display: inline-block;
+  font-weight: $btn-font-weight;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  padding: $btn-padding-y $btn-padding-x;
+  font-size: $btn-font-size;
+  line-height: $btn-line-height;
+  border: none;
+  border-radius: $btn-border-radius;
+  cursor: pointer;
+  transition: $btn-transition;
+
+  &:focus {
+    outline: 0;
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  &:disabled {
+    opacity: $btn-disabled-opacity;
+    cursor: not-allowed;
+  }
+}
+
+.btn--primary {
+  background-color: #007bff;
+  color: white;
+
+  &:hover { background-color: #0056b3; }
+}
+
+.btn--secondary {
+  background-color: #6c757d;
+  color: white;
+
+  &:hover { background-color: #545b62; }
+}
+
+.btn--tertiary {
+  background-color: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+
+  &:hover {
+    background-color: #007bff;
+    color: white;
+  }
+}
