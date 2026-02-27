@@ -10,7 +10,7 @@ Displays a contextual feedback message.
 ## Import
 
 ```js
-import { CnbAlert } from '@darthsaul/vue-component-library'
+import { Alert } from '@darthsaul/vue-component-library'
 import '@darthsaul/vue-component-library/css/Alert'
 ```
 
