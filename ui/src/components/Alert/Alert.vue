@@ -1,8 +1,8 @@
 <template>
-	<div :class="['alert', `alert--${type}`]" role="alert">
+	<div :class="['alert', `alert--${variant}`]" role="alert">
 		<div class="alert__icon">
 			<svg
-				v-if="type === 'success'"
+				v-if="variant === 'success'"
 				viewBox="0 0 24 24"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +16,7 @@
 				/>
 			</svg>
 			<svg
-				v-else-if="type === 'danger'"
+				v-else-if="variant === 'danger'"
 				viewBox="0 0 24 24"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -30,7 +30,7 @@
 				/>
 			</svg>
 			<svg
-				v-else-if="type === 'warning'"
+				v-else-if="variant === 'warning'"
 				viewBox="0 0 24 24"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -44,7 +44,7 @@
 				/>
 			</svg>
 			<svg
-				v-else-if="type === 'info'"
+				v-else-if="variant === 'info'"
 				viewBox="0 0 24 24"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -90,10 +90,10 @@
 <script setup>
 defineProps({
 	/**
-	 * Semantic type of the alert, controls color and icon.
+	 * Visual style variant of the alert, controls color and icon.
 	 * @values success, danger, warning, info
 	 */
-	type: {
+	variant: {
 		type: String,
 		default: 'info',
 		validator: (value) =>
