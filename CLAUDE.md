@@ -41,7 +41,7 @@ Components live in `ui/src/components/[ComponentName]/ComponentName.vue` and are
 This library publishes individual component stylesheets in the npm package. Consumers can import a component and its styles independently:
 
 ```js
-import { CnbButton } from '@darthsaul/vue-component-library';
+import { Button } from '@darthsaul/vue-component-library';
 import '@darthsaul/vue-component-library/css/Button';
 ```
 
