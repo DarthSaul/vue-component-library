@@ -10,7 +10,7 @@ Triggers an action or event.
 ## Import
 
 ```js
-import { CnbButton } from '@darthsaul/vue-component-library'
+import { Button } from '@darthsaul/vue-component-library'
 import '@darthsaul/vue-component-library/css/Button'
 ```
 
