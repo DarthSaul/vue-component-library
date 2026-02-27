@@ -12,7 +12,8 @@
 		"./css": "./styles/src/index.scss",
 		"./css/Button": "./styles/src/components/button.scss",
 		"./css/Card": "./styles/src/components/card.scss",
-		"./css/Alert": "./styles/src/components/alert.scss"
+		"./css/Alert": "./styles/src/components/alert.scss",
+		"./css/Input": "./styles/src/components/input.scss"
 	},
 	"files": [
 		"dist",
