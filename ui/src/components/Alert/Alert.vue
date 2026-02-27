@@ -59,9 +59,11 @@
 			</svg>
 		</div>
 		<div class="alert__content">
-			<div v-if="title" class="alert__title">{{ title }}</div>
-			<div v-if="message" class="alert__message">
-				{{ message }}
+			<div v-if="title || $slots.title" class="alert__title">
+				<slot name="title">{{ title }}</slot>
+			</div>
+			<div v-if="message || $slots.default" class="alert__message">
+				<slot>{{ message }}</slot>
 			</div>
 		</div>
 		<button
