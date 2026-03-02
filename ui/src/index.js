@@ -6,6 +6,8 @@ import Input from './components/Input/Input.vue';
 import InputBase from './components/Input/InputBase.vue';
 
 export { Alert, Button, ButtonBase, Card, Input, InputBase };
+export { metaToRows } from './utils/metaToRows.js'
+export { baseProps as ButtonBaseProps, props as ButtonProps } from './components/Button/Button.meta.js'
 
 export default {
 	Alert,
