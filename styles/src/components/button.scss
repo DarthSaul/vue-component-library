@@ -60,3 +60,37 @@ $btn-disabled-opacity: 0.65 !default;
     color: white;
   }
 }
+
+// Size modifiers
+.btn--sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+}
+
+.btn--lg {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1.125rem;
+}
+
+// Outline modifier — combine with any variant
+.btn--outline {
+  background-color: transparent;
+
+  &.btn--primary {
+    color: #007bff;
+    border: 1px solid currentColor;
+    &:hover { background-color: #007bff; color: white; }
+  }
+
+  &.btn--secondary {
+    color: #6c757d;
+    border: 1px solid currentColor;
+    &:hover { background-color: #6c757d; color: white; }
+  }
+
+  &.btn--tertiary {
+    color: #007bff;
+    border: 1px solid currentColor;
+    &:hover { background-color: #007bff; color: white; }
+  }
+}

@@ -44,9 +44,11 @@
 		"@vitejs/plugin-vue": "5.2.4",
 		"markdown-it": "^14.1.1",
 		"sass": "^1.94.2",
+		"typescript": "^5.9.3",
 		"vite": "6.4.1",
 		"vite-plugin-vue-docgen": "^0.3.4",
 		"vue": "^3.4.0",
+		"vue-component-meta": "^3.2.5",
 		"vue-router": "^5.0.3"
 	},
 	"peerDependencies": {

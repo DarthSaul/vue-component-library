@@ -1,12 +1,15 @@
 <template>
   <div :class="['card', { 'card--elevated': elevated }]">
     <div v-if="$slots.header" class="card__header">
+      <!-- @slot Card header area -->
       <slot name="header" />
     </div>
     <div class="card__body">
+      <!-- @slot Card body content -->
       <slot />
     </div>
     <div v-if="$slots.footer" class="card__footer">
+      <!-- @slot Card footer area -->
       <slot name="footer" />
     </div>
   </div>

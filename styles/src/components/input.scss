@@ -30,10 +30,6 @@
 
 .input-base {
   @include input-base;
-}
-
-.input {
-  @include input-base;
 
   &__input {
     &:disabled {
@@ -41,6 +37,12 @@
       cursor: not-allowed;
     }
   }
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 
   &__help-text {
     font-size: 0.8125rem;
@@ -50,7 +52,7 @@
   &--disabled {
     opacity: 0.65;
 
-    .input__label {
+    .input-base__label {
       cursor: not-allowed;
     }
   }
