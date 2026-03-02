@@ -1,4 +1,15 @@
+/**
+ * @typedef {Object} PropDefinition
+ * @property {Function|Function[]} type - Vue prop type constructor(s) (e.g. String, Boolean, Array)
+ * @property {*} [default] - Default value for the prop
+ * @property {function(*): boolean} [validator] - Returns true if the value is valid
+ * @property {string} description - Human-readable description for docs tooling
+ * @property {Array<*>} [options] - Enumerated allowed values; used to populate select controls
+ * @property {'select'|'boolean'|'text'|'number'} [control] - Control type hint for docs/Storybook
+ */
+
 // ButtonBase's props — primitive styling + native behavior
+/** @type {Record<string, PropDefinition>} */
 export const baseProps = {
   type: {
     type: String,
@@ -32,6 +43,7 @@ export const baseProps = {
 }
 
 // Button wrapper's own props — compositional/behavioral concerns
+/** @type {Record<string, PropDefinition>} */
 export const props = {
   outline: {
     type: Boolean,
