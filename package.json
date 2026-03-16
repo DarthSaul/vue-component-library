@@ -13,6 +13,7 @@
 		"./css/Button": "./styles/src/components/button.scss",
 		"./css/Card": "./styles/src/components/card.scss",
 		"./css/Alert": "./styles/src/components/alert.scss",
+		"./css/Dropdown": "./styles/src/components/dropdown.scss",
 		"./css/Input": "./styles/src/components/input.scss"
 	},
 	"files": [
