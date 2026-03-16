@@ -1,16 +1,18 @@
 <script setup>
-import { Input, InputBase } from '@darthsaul/vue-component-library-ui'
-import PropsTable from '@/components/PropsTable.vue'
+import { Input, InputModel, InputProps, metaToRows } from '@darthsaul/vue-component-library-ui'
+import PropsTableNEW from '@/components/PropsTableNEW.vue'
+
+const propRows = metaToRows({ ...InputModel, ...InputProps })
 </script>
 
 # Input
 
-A flexible text field with label, placeholder, type, disabled state, and help text. `InputBase` is a minimal v-model wrapper for when you only need label + value binding.
+A flexible text field with label, placeholder, type, disabled state, and help text.
 
 ## Import
 
 ```js
-import { Input, InputBase } from '@darthsaul/vue-component-library'
+import { Input } from '@darthsaul/vue-component-library'
 import '@darthsaul/vue-component-library/css/Input'
 ```
 
@@ -18,10 +20,10 @@ import '@darthsaul/vue-component-library/css/Input'
 
 <!-- InputBasic live example -->
 
-## Props — InputBase
+## Props
 
-<PropsTable :component="InputBase" />
+<PropsTableNEW type="props" :rows="propRows" />
 
-## Props — Input
+## Events
 
-<PropsTable :component="Input" />
+<PropsTableNEW type="events" :rows="[{ name: 'update:modelValue', description: 'Emitted when the input value changes. Consumed automatically by v-model.' }]" />

@@ -60,9 +60,11 @@
 		</div>
 		<div class="alert__content">
 			<div v-if="title || $slots.title" class="alert__title">
+				<!-- @slot Overrides the title prop with custom content -->
 				<slot name="title">{{ title }}</slot>
 			</div>
 			<div v-if="message || $slots.default" class="alert__message">
+				<!-- @slot Overrides the message prop with custom content -->
 				<slot>{{ message }}</slot>
 			</div>
 		</div>
@@ -126,6 +128,9 @@ defineProps({
 	},
 });
 
+/**
+ * @event close - Emitted when the user clicks the close button (requires closable prop).
+ */
 const emit = defineEmits(['close']);
 
 const handleClose = () => {

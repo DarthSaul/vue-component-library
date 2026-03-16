@@ -22,10 +22,3 @@ import '@darthsaul/vue-component-library/css/Card'
 
 <PropsTable :component="Card" />
 
-## Slots
-
-| Slot | Description |
-|------|-------------|
-| `header` | Card header area |
-| `default` | Card body content |
-| `footer` | Card footer area |

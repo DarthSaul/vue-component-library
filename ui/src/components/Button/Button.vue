@@ -1,25 +1,20 @@
-<template>
-  <button :class="['btn', `btn--${variant}`]" @click="handleClick">
-    <slot />
-  </button>
-</template>
-
 <script setup>
-defineProps({
-  /**
-   * Visual style variant of the button.
-   * @values primary, secondary, tertiary
-   */
-  variant: {
-    type: String,
-    default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'tertiary'].includes(value)
-  }
-})
+import ButtonBase from './ButtonBase.vue'
+import { baseProps, props } from './Button.meta.js'
 
-const emit = defineEmits(['click'])
-
-const handleClick = (event) => {
-  emit('click', event)
-}
+defineProps({ ...baseProps, ...props })
+defineEmits(['click'])
 </script>
+
+<template>
+  <ButtonBase
+    :type="type"
+    :variant="variant"
+    :size="size"
+    :disabled="disabled"
+    :class="{ 'btn--outline': outline, 'btn--loading': loading }"
+    @click="$emit('click', $event)"
+  >
+    <slot />
+  </ButtonBase>
+</template>

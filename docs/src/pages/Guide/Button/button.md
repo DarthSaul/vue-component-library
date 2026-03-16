@@ -1,6 +1,8 @@
 <script setup>
-import { Button } from '@darthsaul/vue-component-library-ui'
-import PropsTable from '@/components/PropsTable.vue'
+import { Button, ButtonBaseProps, ButtonProps, metaToRows } from '@darthsaul/vue-component-library-ui'
+import PropsTableNEW from '@/components/PropsTableNEW.vue'
+
+const propRows = metaToRows({ ...ButtonBaseProps, ...ButtonProps })
 </script>
 
 # Button
@@ -20,4 +22,8 @@ import '@darthsaul/vue-component-library/css/Button'
 
 ## Props
 
-<PropsTable :component="Button" />
+<PropsTableNEW type="props" :rows="propRows" />
+
+## Events
+
+<PropsTableNEW type="events" :rows="[{ name: 'click', description: 'Emitted when the button is clicked.' }]" />

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDocgen from 'vite-plugin-vue-docgen'
 import markdownToVuePlugin from './markdownToVuePlugin.js'
+import { componentMetaPlugin } from './plugins/componentMetaPlugin.js'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -12,6 +13,7 @@ export default defineConfig({
     vue({ include: /\.(vue|md)$/ }),
     vueDocgen(),
     markdownToVuePlugin(),
+    componentMetaPlugin(),
   ],
   resolve: {
     alias: {
