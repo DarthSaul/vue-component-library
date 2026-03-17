@@ -30,10 +30,10 @@ npm install -D @axe-core/playwright
 
 ```js
 // e2e/fixtures/axe-test.js
-const base = require('@playwright/test');
-const AxeBuilder = require('@axe-core/playwright').default;
+import { test as base, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
-exports.test = base.test.extend({
+export const test = base.extend({
 	makeAxeBuilder: async ({ page }, use) => {
 		const makeAxeBuilder = () =>
 			new AxeBuilder({ page }).withTags([
@@ -47,7 +47,7 @@ exports.test = base.test.extend({
 	},
 });
 
-exports.expect = base.expect;
+export { expect };
 ```
 
 A few notes on this:
@@ -60,7 +60,7 @@ A few notes on this:
 
 ```js
 // e2e/tests/button.a11y.spec.js
-const { test, expect } = require('../fixtures/axe-test');
+import { test, expect } from '../fixtures/axe-test.js';
 
 const STORYBOOK_URL = process.env.STORYBOOK_URL || 'http://localhost:6006';
 
@@ -102,7 +102,7 @@ The `waitFor()` call matters. Axe analyzes the DOM at the instant you call `.ana
 
 ```js
 // e2e/tests/a11y-scan.spec.js
-const { test, expect } = require('../fixtures/axe-test');
+import { test, expect } from '../fixtures/axe-test.js';
 
 const STORYBOOK_URL = process.env.STORYBOOK_URL || 'http://localhost:6006';
 
