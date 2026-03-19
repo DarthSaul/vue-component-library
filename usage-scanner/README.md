@@ -11,7 +11,7 @@ npm install
 node src/cli.js --target /path/to/consuming-repo --pretty
 
 # Scan for a different package
-node src/cli.js --target /path/to/repo --package @pvt-scope/cno-common-controls
+node src/cli.js --target /path/to/repo --package @pvt-scope/diff-pkg-name
 
 # Write output to a file
 node src/cli.js --target /path/to/repo --output report.json --pretty
