@@ -70,7 +70,7 @@ When using `--format html`, the scanner generates a self-contained HTML file (no
 - Horizontal bar chart showing relative import distribution
 - Component table with expandable file lists
 
-If no `--output` path is specified, the report is written to `{repoName}-usage-report.html` in the current directory.
+If no `--output` path is specified, the report is written to `dist/reports/{repoName}-usage-report.html`.
 
 ## What It Detects
 

@@ -3,8 +3,8 @@
 import { Command } from 'commander';
 import { scanRepository } from './scanner.js';
 import { generateHtmlReport } from './reporters/html-reporter.js';
-import { writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
 const program = new Command();
 
@@ -31,7 +31,8 @@ program.name('usage-scanner')
 				const html = generateHtmlReport(report);
 				const outputPath = options.output
 					? resolve(options.output)
-					: resolve(`${report.repoName}-usage-report.html`);
+					: resolve('dist/reports', `${report.repoName}-usage-report.html`);
+				mkdirSync(dirname(outputPath), { recursive: true });
 				writeFileSync(outputPath, html, 'utf-8');
 				console.log(`HTML report written to ${outputPath}`);
 			} else {
