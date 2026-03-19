@@ -1,0 +1,34 @@
+{
+	"name": "@pvt-scope/usage-scanner",
+	"version": "0.1.0",
+	"description": "AST-based component usage scanner for @pvt-scope packages",
+	"type": "module",
+	"bin": {
+		"usage-scanner": "./src/cli.js"
+	},
+	"scripts": {
+		"scan": "node src/cli.js",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"keywords": [
+		"vue",
+		"component",
+		"usage",
+		"scanner",
+		"ast"
+	],
+	"dependencies": {
+		"@babel/parser": "^7.27.0",
+		"@babel/traverse": "^7.27.0",
+		"@vue/compiler-sfc": "^3.5.0",
+		"commander": "^13.1.0",
+		"fast-glob": "^3.3.3"
+	},
+	"devDependencies": {
+		"vitest": "^3.1.0"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
+}
