@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { scanRepository } from './scanner.js';
+import { generateHtmlReport } from './reporters/html-reporter.js';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -16,6 +17,7 @@ program.name('usage-scanner')
 		'@pvt-scope/pkg-name',
 	)
 	.option('-o, --output <path>', 'Output file path (defaults to stdout)')
+	.option('-f, --format <type>', 'Output format: json or html', 'json')
 	.option('--pretty', 'Pretty-print JSON output', false)
 	.action(async (options) => {
 		const targetPath = resolve(options.target);
@@ -25,16 +27,25 @@ program.name('usage-scanner')
 				packageName: options.package,
 			});
 
-			const json = options.pretty
-				? JSON.stringify(report, null, 2)
-				: JSON.stringify(report);
-
-			if (options.output) {
-				const outputPath = resolve(options.output);
-				writeFileSync(outputPath, json, 'utf-8');
-				console.log(`Report written to ${outputPath}`);
+			if (options.format === 'html') {
+				const html = generateHtmlReport(report);
+				const outputPath = options.output
+					? resolve(options.output)
+					: resolve(`${report.repoName}-usage-report.html`);
+				writeFileSync(outputPath, html, 'utf-8');
+				console.log(`HTML report written to ${outputPath}`);
 			} else {
-				console.log(json);
+				const json = options.pretty
+					? JSON.stringify(report, null, 2)
+					: JSON.stringify(report);
+
+				if (options.output) {
+					const outputPath = resolve(options.output);
+					writeFileSync(outputPath, json, 'utf-8');
+					console.log(`Report written to ${outputPath}`);
+				} else {
+					console.log(json);
+				}
 			}
 		} catch (error) {
 			console.error(`Scan failed: ${error.message}`);
