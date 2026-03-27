@@ -12,7 +12,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const reportDataDir = resolve(__dirname, '../report-data');
+const reportDataDir = resolve(__dirname, '../dashboard-app/public/report-data');
 
 const files = readdirSync(reportDataDir)
   .filter((f) => f.endsWith('.json') && f !== 'manifest.json')

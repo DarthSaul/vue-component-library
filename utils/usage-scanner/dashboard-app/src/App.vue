@@ -10,7 +10,7 @@ const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const manifestRes = await fetch('/manifest.json');
+    const manifestRes = await fetch('/report-data/manifest.json');
     if (!manifestRes.ok) throw new Error('Could not load manifest.json');
     const filenames = await manifestRes.json();
 
@@ -21,7 +21,7 @@ onMounted(async () => {
 
     const results = await Promise.all(
       filenames.map(async (filename) => {
-        const res = await fetch(`/${filename}`);
+        const res = await fetch(`/report-data/${filename}`);
         if (!res.ok) throw new Error(`Could not load ${filename}: ${res.status}`);
         return res.json();
       }),

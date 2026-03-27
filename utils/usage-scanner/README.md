@@ -102,12 +102,12 @@ npm run dev   # http://localhost:5173
 ### Adding reports
 
 ```bash
-# 1. Scan each project, writing output into report-data/
+# 1. Scan each project, writing output into the dashboard's public directory
 node src/cli.js --target /path/to/project-a --package @pvt-scope/pkg-name \
-  --pretty --output report-data/project-a.json
+  --pretty --output dashboard-app/public/report-data/project-a.json
 
 node src/cli.js --target /path/to/project-b --package @pvt-scope/pkg-name \
-  --pretty --output report-data/project-b.json
+  --pretty --output dashboard-app/public/report-data/project-b.json
 
 # 2. Regenerate the manifest so the dashboard picks up the new files
 npm run build-manifest
@@ -115,14 +115,14 @@ npm run build-manifest
 # 3. Open or refresh the dashboard
 ```
 
-`npm run build-manifest` scans `report-data/` for `*.json` files and writes `report-data/manifest.json`. Re-run it any time you add, rename, or remove a report file.
+`npm run build-manifest` scans `dashboard-app/public/report-data/` for `*.json` files and writes `manifest.json` in the same directory. Re-run it any time you add, rename, or remove a report file.
 
 ### How it works
 
-- `report-data/manifest.json` — array of filenames the dashboard should load
+- `dashboard-app/public/report-data/manifest.json` — array of filenames the dashboard should load
 - The dashboard fetches the manifest on mount, then fetches every listed file in parallel
 - Each report becomes a tab, labeled by `repoName`
-- `manifest.json` and all report files are served as static assets by Vite during development
+- `public/report-data/` is served as static assets by Vite in both dev and production builds
 
 ## Running Tests
 
