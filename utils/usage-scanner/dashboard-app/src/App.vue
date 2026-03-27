@@ -1,18 +1,33 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import ProjectTabs from './components/ProjectTabs.vue';
 import DashboardView from './components/DashboardView.vue';
 
-const report = ref(null);
+const reports = ref([]);
+const activeIndex = ref(0);
 const error = ref(null);
 const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const res = await fetch('/report.json');
-    if (!res.ok) {
-      throw new Error(`${res.status} ${res.statusText}`);
+    const manifestRes = await fetch('/manifest.json');
+    if (!manifestRes.ok) throw new Error('Could not load manifest.json');
+    const filenames = await manifestRes.json();
+
+    if (filenames.length === 0) {
+      error.value = 'No reports found in manifest.json. Run npm run build-manifest after adding report files.';
+      return;
     }
-    report.value = await res.json();
+
+    const results = await Promise.all(
+      filenames.map(async (filename) => {
+        const res = await fetch(`/${filename}`);
+        if (!res.ok) throw new Error(`Could not load ${filename}: ${res.status}`);
+        return res.json();
+      }),
+    );
+
+    reports.value = results;
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -28,11 +43,16 @@ onMounted(async () => {
     </header>
 
     <main class="app-main">
-      <p v-if="loading" class="status-message">Loading report...</p>
-      <p v-else-if="error" class="error-message">
-        Could not load report.json — {{ error }}
-      </p>
-      <DashboardView v-else :report="report" />
+      <p v-if="loading" class="status-message">Loading reports...</p>
+      <p v-else-if="error" class="error-message">{{ error }}</p>
+      <template v-else>
+        <ProjectTabs
+          :reports="reports"
+          :active-index="activeIndex"
+          @select="activeIndex = $event"
+        />
+        <DashboardView :report="reports[activeIndex]" />
+      </template>
     </main>
   </div>
 </template>
