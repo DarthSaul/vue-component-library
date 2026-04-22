@@ -25,7 +25,9 @@
 		"build": "npm run build --workspace=ui",
 		"build:ui": "npm run build --workspace=ui",
 		"build:docs": "npm run build --workspace=docs",
-		"preview": "npm run preview --workspace=docs"
+		"preview": "npm run preview --workspace=docs",
+		"dev:css-demo": "npm run dev --workspace=css-demo",
+		"build:css-demo": "npm run build --workspace=css-demo"
 	},
 	"keywords": [
 		"vue",
@@ -39,7 +41,8 @@
 		"ui",
 		"docs",
 		"styles",
-		"icons"
+		"icons",
+		"css-demo"
 	],
 	"devDependencies": {
 		"@vitejs/plugin-vue": "5.2.4",

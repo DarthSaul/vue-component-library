@@ -1,0 +1,9 @@
+{
+  "name": "css-demo",
+  "private": true,
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vite build",
+    "preview": "vite preview --port 3001"
+  }
+}
