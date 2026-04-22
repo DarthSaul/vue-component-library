@@ -54,6 +54,7 @@ export function extractImportsFromScript(code, { packageName, isTS = false }) {
 						results.push({
 							componentName,
 							localName,
+							source,
 						});
 						break;
 					}
@@ -72,6 +73,7 @@ export function extractImportsFromScript(code, { packageName, isTS = false }) {
 									.name,
 							localName: specifier
 								.local.name,
+							source,
 						});
 						break;
 					}
@@ -82,6 +84,7 @@ export function extractImportsFromScript(code, { packageName, isTS = false }) {
 							componentName: '*',
 							localName: specifier
 								.local.name,
+							source,
 						});
 						break;
 					}

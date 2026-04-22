@@ -11,8 +11,8 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'Button', localName: 'Button' },
-			{ componentName: 'Input', localName: 'Input' },
+			{ componentName: 'Button', localName: 'Button', source: '@pvt-scope/pkg-name' },
+			{ componentName: 'Input', localName: 'Input', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -23,7 +23,7 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'Button', localName: 'PreButton' },
+			{ componentName: 'Button', localName: 'PreButton', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -34,7 +34,7 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'Button', localName: 'Button' },
+			{ componentName: 'Button', localName: 'Button', source: '@pvt-scope/pkg-name/components/Button' },
 		]);
 	});
 
@@ -45,7 +45,7 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'LibName', localName: 'LibName' },
+			{ componentName: 'LibName', localName: 'LibName', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -56,7 +56,7 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: '*', localName: 'LibName' },
+			{ componentName: '*', localName: 'LibName', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -71,7 +71,7 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'Button', localName: 'Button' },
+			{ componentName: 'Button', localName: 'Button', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -90,8 +90,9 @@ describe('extractImportsFromScript', () => {
 			{
 				componentName: 'ButtonProps',
 				localName: 'ButtonProps',
+				source: '@pvt-scope/pkg-name',
 			},
-			{ componentName: 'Button', localName: 'Button' },
+			{ componentName: 'Button', localName: 'Button', source: '@pvt-scope/pkg-name' },
 		]);
 	});
 
@@ -114,9 +115,30 @@ describe('extractImportsFromScript', () => {
 		});
 
 		expect(result).toEqual([
-			{ componentName: 'Button', localName: 'Button' },
-			{ componentName: 'Input', localName: 'Input' },
-			{ componentName: 'Dropdown', localName: 'Dropdown' },
+			{ componentName: 'Button', localName: 'Button', source: '@pvt-scope/pkg-name' },
+			{ componentName: 'Input', localName: 'Input', source: '@pvt-scope/pkg-name' },
+			{ componentName: 'Dropdown', localName: 'Dropdown', source: '@pvt-scope/pkg-name' },
 		]);
+	});
+
+	it('includes source for icon subpath imports', () => {
+		const code = `import { CheckCircle } from '@pvt-scope/pkg-name/icons';`;
+		const result = extractImportsFromScript(code, {
+			packageName: PACKAGE,
+		});
+
+		expect(result).toEqual([
+			{ componentName: 'CheckCircle', localName: 'CheckCircle', source: '@pvt-scope/pkg-name/icons' },
+		]);
+	});
+
+	it('includes source for styles subpath imports', () => {
+		const code = `import '@pvt-scope/pkg-name/styles/Button';`;
+		const result = extractImportsFromScript(code, {
+			packageName: PACKAGE,
+		});
+
+		// side-effect import has no specifiers — nothing pushed
+		expect(result).toEqual([]);
 	});
 });

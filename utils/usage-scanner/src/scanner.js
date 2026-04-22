@@ -17,6 +17,8 @@ export async function scanRepository(repoPath, { packageName }) {
 
   /** @type {Map<string, ComponentUsage>} */
   const components = new Map();
+  /** @type {Map<string, ComponentUsage>} */
+  const icons = new Map();
 
   for (const filePath of files) {
     const relPath = relative(repoPath, filePath);
@@ -24,7 +26,15 @@ export async function scanRepository(repoPath, { packageName }) {
     const imports = extractImportsFromFile(filePath, source, packageName);
 
     for (const imported of imports) {
-      const existing = components.get(imported.componentName) ?? {
+      const category = categorizeImport(imported.source, packageName);
+
+      // Skip styles — we don't report on them
+      if (category === 'styles') {
+        continue;
+      }
+
+      const targetMap = category === 'icons' ? icons : components;
+      const existing = targetMap.get(imported.componentName) ?? {
         count: 0,
         files: [],
       };
@@ -35,11 +45,33 @@ export async function scanRepository(repoPath, { packageName }) {
         localName: imported.localName,
       });
 
-      components.set(imported.componentName, existing);
+      targetMap.set(imported.componentName, existing);
     }
   }
 
-  return buildReport(repoPath, packageName, components);
+  return buildReport(repoPath, packageName, components, icons);
+}
+
+/**
+ * Determine the import category based on the source path.
+ *
+ * @param {string} source - The full import source string.
+ * @param {string} packageName - The target package name.
+ * @returns {'icons' | 'components' | 'styles'}
+ */
+function categorizeImport(source, packageName) {
+  const subpath = source.slice(packageName.length);
+
+  if (subpath.startsWith('/icons')) {
+    return 'icons';
+  }
+
+  if (subpath.startsWith('/styles')) {
+    return 'styles';
+  }
+
+  // Everything else: root imports, /ui, /button, /dropdown, etc.
+  return 'components';
 }
 
 /**
@@ -124,17 +156,17 @@ function extractFromVueSFC(source, packageName) {
  * @param {string} repoPath
  * @param {string} packageName
  * @param {Map<string, ComponentUsage>} components
+ * @param {Map<string, ComponentUsage>} icons
  * @returns {ScanReport}
  */
-function buildReport(repoPath, packageName, components) {
-  const componentEntries = Object.fromEntries(
-    [...components.entries()].sort(([a], [b]) => a.localeCompare(b)),
-  );
+function buildReport(repoPath, packageName, components, icons) {
+  const sortEntries = (map) =>
+    Object.fromEntries(
+      [...map.entries()].sort(([a], [b]) => a.localeCompare(b)),
+    );
 
-  const totalImports = [...components.values()].reduce(
-    (sum, c) => sum + c.count,
-    0,
-  );
+  const sumCounts = (map) =>
+    [...map.values()].reduce((sum, c) => sum + c.count, 0);
 
   return {
     repoName: basename(repoPath),
@@ -142,9 +174,12 @@ function buildReport(repoPath, packageName, components) {
     scannedAt: new Date().toISOString(),
     summary: {
       uniqueComponents: components.size,
-      totalImports,
+      totalComponentImports: sumCounts(components),
+      uniqueIcons: icons.size,
+      totalIconImports: sumCounts(icons),
     },
-    components: componentEntries,
+    components: sortEntries(components),
+    icons: sortEntries(icons),
   };
 }
 
@@ -152,6 +187,7 @@ function buildReport(repoPath, packageName, components) {
  * @typedef {object} ImportedComponent
  * @property {string} componentName - The exported name from the package.
  * @property {string} localName - The local binding name (may differ if renamed).
+ * @property {string} source - The full import source string.
  */
 
 /**
@@ -165,6 +201,7 @@ function buildReport(repoPath, packageName, components) {
  * @property {string} repoName
  * @property {string} packageName
  * @property {string} scannedAt
- * @property {{ uniqueComponents: number, totalImports: number }} summary
+ * @property {{ uniqueComponents: number, totalComponentImports: number, uniqueIcons: number, totalIconImports: number }} summary
  * @property {Record<string, ComponentUsage>} components
+ * @property {Record<string, ComponentUsage>} icons
  */

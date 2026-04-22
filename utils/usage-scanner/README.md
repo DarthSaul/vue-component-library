@@ -41,26 +41,32 @@ node src/cli.js --target /path/to/repo --format html --output my-report.html
 	"packageName": "@pvt-scope/pkg-name",
 	"scannedAt": "2026-03-19T15:00:00.000Z",
 	"summary": {
-		"uniqueComponents": 12,
-		"totalImports": 87
+		"uniqueComponents": 8,
+		"totalComponentImports": 47,
+		"uniqueIcons": 23,
+		"totalIconImports": 89
 	},
 	"components": {
 		"Button": {
 			"count": 23,
 			"files": [
-				{
-					"path": "src/views/Login.vue",
-					"localName": "Button"
-				},
-				{
-					"path": "src/components/Toolbar.vue",
-					"localName": "Button"
-				}
+				{ "path": "src/views/Login.vue", "localName": "Button" },
+				{ "path": "src/components/Toolbar.vue", "localName": "Button" }
+			]
+		}
+	},
+	"icons": {
+		"check-circle": {
+			"count": 15,
+			"files": [
+				{ "path": "src/views/Login.vue", "localName": "CheckCircle" }
 			]
 		}
 	}
 }
 ```
+
+Imports from subpaths starting with `/styles` are silently skipped — only `components` and `icons` are reported.
 
 ### HTML Report
 
@@ -81,6 +87,43 @@ If no `--output` path is specified, the report is written to `dist/reports/{repo
 - Namespace imports: `import * as LibName from '@pvt-scope/pkg-name'`
 - `.vue`, `.js`, and `.ts` files (including `<script setup>`)
 
+## Dashboard
+
+A Vite + Vue SPA lives in `dashboard-app/` for visualizing scan reports in the browser. It reads from `report-data/` — drop JSON reports there, regenerate the manifest, and the dashboard loads all of them with a tab per project.
+
+### Setup
+
+```bash
+cd dashboard-app
+npm install
+npm run dev   # http://localhost:5173
+```
+
+### Adding reports
+
+```bash
+# 1. Scan each project, writing output into the dashboard's public directory
+node src/cli.js --target /path/to/project-a --package @pvt-scope/pkg-name \
+  --pretty --output dashboard-app/public/report-data/project-a.json
+
+node src/cli.js --target /path/to/project-b --package @pvt-scope/pkg-name \
+  --pretty --output dashboard-app/public/report-data/project-b.json
+
+# 2. Regenerate the manifest so the dashboard picks up the new files
+npm run build-manifest
+
+# 3. Open or refresh the dashboard
+```
+
+`npm run build-manifest` scans `dashboard-app/public/report-data/` for `*.json` files and writes `manifest.json` in the same directory. Re-run it any time you add, rename, or remove a report file.
+
+### How it works
+
+- `dashboard-app/public/report-data/manifest.json` — array of filenames the dashboard should load
+- The dashboard fetches the manifest on mount, then fetches every listed file in parallel
+- Each report becomes a tab, labeled by `repoName`
+- `public/report-data/` is served as static assets by Vite in both dev and production builds
+
 ## Running Tests
 
 ```bash
@@ -92,6 +135,6 @@ npm test
 - [ ] Template AST scanning (detect `<Button>` / `<r-button>` in templates)
 - [ ] Scheduled GitHub Actions pipeline for automated scanning
 - [x] HTML report generation (`--format html`)
-- [ ] Dashboard integration in LibName docs SPA
+- [x] Dashboard SPA for multi-project report visualization (`dashboard-app/`)
 - [ ] Multi-repo batch scanning with config file
 - [ ] Trend tracking via timestamped report persistence
