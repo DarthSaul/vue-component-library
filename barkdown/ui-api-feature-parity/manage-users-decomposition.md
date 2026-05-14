@@ -10,7 +10,7 @@
 
 - IDs follow `MU-<TYPE>-NN`: `D` displayed, `A` action, `S` state, `T` transition. `MU` prefix for Manage Users.
 - Visibility conditions noted inline where elements are conditional.
-- `❓` flags open questions to chase down with PM, designer, or backend.
+- `❓` flags open questions to chase down with PM, designer, or backend. All open questions are consolidated in the working tracker at the end of this document.
 - Roxbury components named explicitly so future engineers know what’s reusable vs. custom.
 
 -----
@@ -118,54 +118,54 @@
 |MU-T-22|MU-S-14                                      |Previous state                     |Add User flow cancelled                                                                                                                                                               |
 |MU-T-23|Lock action on row → user becomes deactivated|MU-S-09 may activate               |If locking a user effectively deactivates them. ❓ Confirm relationship between “locked” status and “deactivated” — are these the same concept or distinct? **High-priority question.**|
 
-### Open questions consolidated (chase before or during build)
+-----
 
-**Critical (blocks design or build):**
+## Open Questions — Working Tracker
 
-- ❓ Q1: **Locked vs. deactivated** — are these the same status or distinct concepts? If a user is “locked” do they appear in the active table with locked status, or move to the deactivated table? This fundamentally changes the data model and the meaning of the lock/unlock button. (MU-T-23, MU-D-10, MU-D-12, MU-D-18, MU-A-07.)
-- ❓ Q2: **No-users empty state** — design doesn’t cover the case where a business is selected but has no active users. Need designer to specify copy + illustration + whether Add User CTA is more prominent. (MU-D-15, MU-S-05.)
-- ❓ Q3: **Filters dialog** — entire interaction is undesigned. What fields are filterable? Modal or panel? Multi-select or single? (MU-D-04, MU-A-03, MU-A-04, MU-A-05, MU-S-13.)
+This table is the working artifact driven to closure with Design and Backend **before** the risk register is written. Each answered question is then transcribed into either the parity matrix (API questions) or the risk register (design-assumption questions), per the “Becomes” column. Update Status and Answer columns as responses come in; the completed table is the raw material for the register.
 
-**Important (resolvable in working sessions):**
+**Status values:** `Open` (not yet raised) · `Asked` (raised, awaiting answer) · `Answered` (resolved) · `Blocked` (cannot resolve yet — dependency noted in Answer column)
 
-- ❓ Q4: Business selector persistence across navigation. (MU-D-03, MU-A-01)
-- ❓ Q5: Pagination strategy (offset vs. cursor) and page size. (MU-D-13, MU-A-11)
-- ❓ Q6: Sort behavior — which columns, server-side or client-side. (MU-D-07, MU-A-10)
-- ❓ Q7: Deactivated users — separate endpoint, separate query, or filtered on the same response? (MU-S-09, MU-T-12)
-- ❓ Q8: Permission gating on lock/unlock/reactivate — role-restricted or universally available? Where do permissions come from (current user object, per-row in response)? (MU-D-12, MU-A-07, MU-A-08, MU-A-09)
-- ❓ Q9: Primary contact / owner chips — mutually exclusive or stackable? Source field naming. (MU-D-08)
-- ❓ Q10: User ID — system ID, external ID, both? Display format, copyability. (MU-D-09, MU-A-14)
-- ❓ Q11: Last activity for users who have never logged in — display “Never”, “—”, or hide? (MU-D-11)
-- ❓ Q12: Lock/unlock button behavior for `pending_setup` status. (MU-D-12, MU-A-07)
-- ❓ Q13: Loading-during-refresh UX — skeleton or stale-with-indicator. (MU-S-07)
-- ❓ Q14: Row action error UX — inline or toast; retry affordance. (MU-S-12, MU-A-13)
-- ❓ Q15: Error state placement — inline replacing table, or banner above. (MU-D-17)
-- ❓ Q16: Refetch vs. update-in-place after row actions. (MU-A-07, MU-A-08, MU-A-09)
-- ❓ Q17: Behavior when business is changed mid-action — confirmation prompt, or silent cancel? (MU-A-02)
+**Priority values:** `Critical` (blocks design or build) · `Important` (resolvable in working sessions, doesn’t block start) · `Low` (defaults are safe; confirm later)
 
-**Low priority (defaults are fine, confirm later):**
+|ID |Question                                                                                                                                                                 |Related IDs                                |Owner           |Priority |Status|Answer / resolution|Becomes                                       |
+|---|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|----------------|---------|------|-------------------|----------------------------------------------|
+|Q1 |Locked vs. deactivated — same status or distinct concepts? If a user is “locked,” do they stay in the active table with a locked badge, or move to the deactivated table?|MU-T-23, MU-D-10, MU-D-12, MU-D-18, MU-A-07|Design + Backend|Critical |Open  |                   |Parity matrix + risk register                 |
+|Q2 |No-users empty state — design doesn’t cover a selected business with zero active users. Need copy, illustration, and whether the Add User CTA is more prominent here.    |MU-D-15, MU-S-05                           |Design          |Critical |Open  |                   |Risk register                                 |
+|Q3 |Filters dialog — entire interaction is undesigned. What fields are filterable? Modal or panel? Single- or multi-select? Is it in MVP scope at all?                       |MU-D-04, MU-A-03, MU-A-04, MU-A-05, MU-S-13|Design + PM     |Critical |Open  |                   |Risk register                                 |
+|Q4 |Business selector — is the selection persisted across navigation away and back?                                                                                          |MU-D-03, MU-A-01                           |PM + Backend    |Important|Open  |                   |Parity matrix                                 |
+|Q5 |Pagination strategy — offset-based or cursor-based? Page size?                                                                                                           |MU-D-13, MU-A-11                           |Backend         |Important|Open  |                   |Parity matrix                                 |
+|Q6 |Sort behavior — which columns are sortable, and is sorting server-side or client-side?                                                                                   |MU-D-07, MU-A-10                           |Backend         |Important|Open  |                   |Parity matrix                                 |
+|Q7 |Deactivated users — separate endpoint, separate query param, or filtered on the same response as active users?                                                           |MU-S-09, MU-T-12                           |Backend         |Important|Open  |                   |Parity matrix                                 |
+|Q8 |Permission gating on lock/unlock/reactivate — role-restricted or universal? Where do permissions come from — current user object, or per-row in the users response?      |MU-D-12, MU-A-07, MU-A-08, MU-A-09         |Backend         |Important|Open  |                   |Parity matrix                                 |
+|Q9 |Primary contact / owner chips — mutually exclusive, or can a user be both? Confirm source field naming.                                                                  |MU-D-08                                    |Design + Backend|Important|Open  |                   |Parity matrix                                 |
+|Q10|User ID — system ID, external ID, or both? Display format, and is it copy-to-clipboard?                                                                                  |MU-D-09, MU-A-14                           |Design + Backend|Important|Open  |                   |Parity matrix                                 |
+|Q11|Last activity for users who have never logged in — display “Never”, “—”, or hide the value?                                                                              |MU-D-11                                    |Design          |Important|Open  |                   |Risk register                                 |
+|Q12|Lock/unlock button behavior for `pending_setup` status — disabled, hidden, or a different action?                                                                        |MU-D-12, MU-A-07                           |Design          |Important|Open  |                   |Risk register                                 |
+|Q13|Loading-during-refresh UX — show skeleton again, or show stale data with a refresh indicator?                                                                            |MU-S-07                                    |Design          |Important|Open  |                   |Risk register                                 |
+|Q14|Row action error UX — inline on the row, or toast? Retry affordance?                                                                                                     |MU-S-12, MU-A-13                           |Design          |Important|Open  |                   |Risk register                                 |
+|Q15|Error state placement — inline replacing the table, or a banner above it?                                                                                                |MU-D-17                                    |Design          |Important|Open  |                   |Risk register                                 |
+|Q16|After a row action, refetch the list or update the row in place?                                                                                                         |MU-A-07, MU-A-08, MU-A-09                  |PM (UX call)    |Important|Open  |                   |Risk register                                 |
+|Q17|Changing the business mid-action — confirmation prompt, or silent cancel of the in-flight action?                                                                        |MU-A-02                                    |Design + PM     |Important|Open  |                   |Risk register                                 |
+|Q18|Final copy for all static labels — title, subtitle, section headers, empty states.                                                                                       |MU-D-01, MU-D-02, MU-D-06, MU-D-14, MU-D-19|Design          |Low      |Open  |                   |Resolve in design review — no further tracking|
+|Q19|Does tapping a user row navigate to a detail view?                                                                                                                       |(adjacent screens)                         |Design + PM     |Low      |Open  |                   |Risk register if yes (new scope); else close  |
+|Q20|Chip color mapping for each status value.                                                                                                                                |MU-D-10                                    |Design          |Low      |Open  |                   |Resolve in design review — no further tracking|
 
-- ❓ Q18: Final copy for all static labels (title, subtitle, section headers, empty state).
-- ❓ Q19: Whether tapping a user row navigates to a detail view.
-- ❓ Q20: Chip color mapping for status values.
+### How this tracker feeds the next artifacts
 
-### Notes for matrix and risk register population
+- **Critical items (Q1–Q3)** must reach `Answered` before the risk register is finalized — they change the shape of the build, not just its details. Q3 in particular may resolve as “descoped from MVP,” which is itself a valid answer.
+- **Important items (Q4–Q17)** should be `Answered` or have a documented assumption before the relevant screen area is built. They don’t block kickoff.
+- **Low items (Q18–Q20)** can carry safe defaults into the build; confirm during design review.
+- The split in the **Becomes** column reflects a rule of thumb: questions about *what the API provides* become parity matrix rows; questions about *what the design intends* (where we’re proceeding on an assumption) become risk register rows; purely cosmetic confirmations resolve in design review with no further tracking.
 
-Each `❓` above maps to either a parity-matrix row (if it’s an API question) or a risk-register row (if it’s a design question we’re assuming our way past). Mapping:
+### New findings produced by this decomposition
 
-- **Q1 (locked vs. deactivated)** → both. Parity row for the API contract (one status field or two?); risk row because we’re assuming an answer to start building.
-- **Q2 (no-users empty state)** → risk row only. Design gap, no API implication.
-- **Q3 (filters dialog)** → risk row. Major design gap — assumption is that filters are out of MVP for this engagement unless explicitly added; this needs PO confirmation.
-- **Q4–Q17** → matrix rows for the API-dependent ones (Q5, Q6, Q7, Q8, Q9, Q10), risk rows for the design-dependent ones (Q11, Q12, Q13, Q14, Q15, Q16, Q17).
-- **Q18–Q20** → notes only; resolve in design review.
+Items not on the radar before the decomposition pass — surfaced by the discipline of enumerating every element, action, state, and transition:
 
-**New findings produced by this decomposition** (items not already on my radar):
-
-- The “locked vs. deactivated” ambiguity. Most consequential finding. The design uses both terms and it’s unclear if they’re the same state or distinct.
-- The missing no-users empty state. Easy to miss because the table just doesn’t render anything obvious.
-- The undefined filter dialog. Surfaced because it’s drawn in the design as a button with no follow-through.
-- The unclear relationship between the lock/unlock button and the user’s “deactivated” status — i.e., does locking a user move them to the deactivated table, or just change their badge?
-- The refetch-vs.-update-in-place decision after row actions — surfaced by writing out the Action result, not visible from displayed fields alone.
-- The “change business mid-action” edge case — surfaced by writing out MU-A-02 with explicit preconditions.
+- **The “locked vs. deactivated” ambiguity (Q1).** Most consequential finding. The design uses both terms and it’s unclear whether they’re the same state or distinct.
+- **The missing no-users empty state (Q2).** Easy to miss because the table simply renders nothing obvious.
+- **The undefined filter dialog (Q3).** Surfaced because it’s drawn as a button with no follow-through.
+- **The refetch-vs.-update-in-place decision (Q16).** Surfaced by writing out the *result* of a row action — invisible from the displayed-fields view alone.
+- **The change-business-mid-action edge case (Q17).** Surfaced by writing out MU-A-02 with explicit preconditions.
 
 These findings alone justify the time spent on this decomposition.
