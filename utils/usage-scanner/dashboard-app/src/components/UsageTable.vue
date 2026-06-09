@@ -10,6 +10,10 @@ const props = defineProps({
     type: String,
     default: 'No entries found.',
   },
+  showTemplateUses: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const search = ref('');
@@ -53,7 +57,8 @@ function toggleRow(name) {
       <thead>
         <tr>
           <th class="col-name">Name</th>
-          <th class="col-count">Count</th>
+          <th class="col-count">Imports</th>
+          <th v-if="showTemplateUses" class="col-count">Uses</th>
           <th class="col-files">Files</th>
         </tr>
       </thead>
@@ -71,15 +76,19 @@ function toggleRow(name) {
               {{ row.name }}
             </td>
             <td class="col-count">{{ row.count }}</td>
+            <td v-if="showTemplateUses" class="col-count col-uses">{{ row.templateUses ?? 0 }}</td>
             <td class="col-files">{{ row.files.length }} file{{ row.files.length !== 1 ? 's' : '' }}</td>
           </tr>
           <tr v-if="expandedRows.has(row.name)" class="row-detail">
-            <td colspan="3">
+            <td :colspan="showTemplateUses ? 4 : 3">
               <ul class="file-list">
                 <li v-for="file in row.files" :key="file.path + file.localName" class="file-item">
                   <code class="file-path">{{ file.path }}</code>
                   <span v-if="file.localName !== row.name" class="file-alias">
                     as <code>{{ file.localName }}</code>
+                  </span>
+                  <span v-if="showTemplateUses && file.templateUses > 0" class="file-uses">
+                    used {{ file.templateUses }}×
                   </span>
                 </li>
               </ul>
