@@ -54,8 +54,12 @@ function renderHeader(report, scanDate) {
 				<span class="stat-label">Components</span>
 			</div>
 			<div class="stat-card">
-				<span class="stat-value">${report.summary.totalImports}</span>
+				<span class="stat-value">${report.summary.totalComponentImports}</span>
 				<span class="stat-label">Total imports</span>
+			</div>
+			<div class="stat-card">
+				<span class="stat-value">${report.summary.totalComponentUses ?? 0}</span>
+				<span class="stat-label">Template uses</span>
 			</div>
 		</div>
 	</header>`;
@@ -94,8 +98,11 @@ function renderTable(components) {
 		.map(([name, usage], i) => {
 			const fileRows = usage.files
 				.map(
-					(f) =>
-						`<li><code>${esc(f.path)}</code>${f.localName !== name ? ` <span class="alias">as ${esc(f.localName)}</span>` : ''}</li>`,
+					(f) => {
+						const alias = f.localName !== name ? ` <span class="alias">as ${esc(f.localName)}</span>` : '';
+						const uses = f.templateUses > 0 ? ` <span class="uses">used ${f.templateUses}×</span>` : '';
+						return `<li><code>${esc(f.path)}</code>${alias}${uses}</li>`;
+					},
 				)
 				.join('');
 
@@ -103,12 +110,13 @@ function renderTable(components) {
 			<tr>
 				<td class="comp-name">${esc(name)}</td>
 				<td class="comp-count">${usage.count}</td>
+				<td class="comp-count">${usage.templateUses ?? 0}</td>
 				<td>
 					<button class="toggle-btn" data-toggle="files-${i}">Show files</button>
 				</td>
 			</tr>
 			<tr id="files-${i}" class="files-row hidden">
-				<td colspan="3">
+				<td colspan="4">
 					<ul class="file-list">${fileRows}</ul>
 				</td>
 			</tr>`;
@@ -123,6 +131,7 @@ function renderTable(components) {
 				<tr>
 					<th>Component</th>
 					<th>Imports</th>
+					<th>Uses</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -347,6 +356,11 @@ const CSS = `
 		font-size: 0.75rem;
 		color: var(--accent);
 		font-style: italic;
+	}
+
+	.uses {
+		font-size: 0.75rem;
+		color: var(--text-muted);
 	}
 
 	.hidden { display: none; }
