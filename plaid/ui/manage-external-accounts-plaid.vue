@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { DsButton } from '@ds/vue';
 import { usePlaidLink } from '../composables/usePlaidLink';
 import { useExternalAccountStore } from '../composables/useExternalAccountStore';
@@ -17,8 +17,8 @@ const store = useExternalAccountStore();
 // Destructured so the template auto-unwraps these top-level refs/handlers.
 const { open, ready, dismissResults } = link;
 
-// usePlaidToasts owns all toast side effects; this view only reads state.
-usePlaidToasts(link);
+// usePlaidToasts exposes the toast renderers; the view owns the routing.
+const toasts = usePlaidToasts();
 
 onMounted(() => {
   // Preload the Plaid handler and the current list in parallel.
@@ -36,6 +36,20 @@ const linkedAccounts = computed(() =>
 const rejectedAccounts = computed(() =>
   results.value.filter((r) => r.outcome === 'rejected'),
 );
+
+// Toast routing: fire the matching renderer as the presentation resolves,
+// then clear the result state so a toast fires exactly once. The mixed and
+// all-rejected outcomes are surfaced by the results modal, not a toast.
+watch(presentation, (state) => {
+  if (state === 'all-success') {
+    toasts.renderSuccessToast(linkedAccounts.value);
+    dismissResults();
+  } else if (state === 'item-rejection') {
+    const rejection = link.itemRejection.value;
+    if (rejection) toasts.renderItemRejectionToast(rejection);
+    dismissResults();
+  }
+});
 
 // Toasts cover all-success / item-rejection; the modal owns the mixed and
 // all-rejected outcomes where the user needs the per-account breakdown.

@@ -1,10 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ref, nextTick } from 'vue';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useDsToast } from '@ds/vue';
-import {
-  usePlaidToasts,
-  fanOutRejectionToasts,
-} from '../usePlaidToasts';
+import { usePlaidToasts, derivePresentation } from '../usePlaidToasts';
 import { copyForItemRejection, copyForAccountRejection } from '../../rejectionUI';
 
 vi.mock('@ds/vue', () => ({
@@ -14,198 +10,156 @@ vi.mock('@ds/vue', () => ({
 let toast;
 
 beforeEach(() => {
-  toast = { success: vi.fn(), error: vi.fn(), dismiss: vi.fn() };
+  toast = { success: vi.fn(), danger: vi.fn(), dismiss: vi.fn() };
   useDsToast.mockReturnValue(toast);
 });
 
-function linked(institutionName, plaidAccountId = 'plaid_1') {
+function linked(institutionName, plaidAccountId = 'plaid_1', accountMask = '4321') {
   return {
     plaidAccountId,
     outcome: 'linked',
-    account: { plaidAccountId, institutionName, accountMask: '4321' },
+    account: { plaidAccountId, institutionName, accountMask },
   };
 }
 
 function rejected(reason = 'DUPLICATE_ACCOUNT', plaidAccountId = 'plaid_x') {
-  return { plaidAccountId, outcome: 'rejected', reason, message: 'nope' };
+  return { plaidAccountId, outcome: 'rejected', reason, message: 'raw backend message' };
 }
 
-function makeSources(overrides = {}) {
-  return {
-    itemRejection: ref(null),
-    accountResults: ref(null),
-    plaidError: ref(null),
-    dismissResults: vi.fn(),
-    dismissPlaidError: vi.fn(),
-    ...overrides,
-  };
-}
+describe('renderSuccessToast', () => {
+  it('fires a single success toast with the institution name for one account', () => {
+    const { renderSuccessToast } = usePlaidToasts();
 
-describe('usePlaidToasts — presentation → toast routing', () => {
-  it.each([
-    {
-      name: 'all-success',
-      apply: (s) => {
-        s.accountResults.value = [linked('Wells Fargo')];
-      },
-      fires: 'success',
-    },
-    {
-      name: 'item-rejection',
-      apply: (s) => {
-        s.itemRejection.value = { reason: 'IDENTITY_MISMATCH', message: 'x' };
-      },
-      fires: 'error',
-    },
-    {
-      name: 'all-rejected',
-      apply: (s) => {
-        s.accountResults.value = [rejected()];
-      },
-      fires: 'none',
-    },
-    {
-      name: 'partial-success',
-      apply: (s) => {
-        s.accountResults.value = [linked('Wells Fargo'), rejected()];
-      },
-      fires: 'none',
-    },
-    {
-      name: 'none',
-      apply: (s) => {
-        s.accountResults.value = [];
-      },
-      fires: 'none',
-    },
-  ])('$name fires the $fires toast', async ({ apply, fires }) => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
+    renderSuccessToast([linked('Wells Fargo')]);
 
-    apply(sources);
-    await nextTick();
-
-    if (fires === 'success') {
-      expect(toast.success).toHaveBeenCalledTimes(1);
-      expect(toast.error).not.toHaveBeenCalled();
-    } else if (fires === 'error') {
-      expect(toast.error).toHaveBeenCalledTimes(1);
-      expect(toast.success).not.toHaveBeenCalled();
-    } else {
-      expect(toast.success).not.toHaveBeenCalled();
-      expect(toast.error).not.toHaveBeenCalled();
-    }
-  });
-
-  it('item-rejection toast uses the mapped copy for the reason', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
-
-    sources.itemRejection.value = { reason: 'SANCTIONS_SCREENING_FAILED', message: 'x' };
-    await nextTick();
-
-    const copy = copyForItemRejection('SANCTIONS_SCREENING_FAILED');
-    expect(toast.error).toHaveBeenCalledWith({ title: copy.title, message: copy.body });
-  });
-});
-
-describe('usePlaidToasts — success copy', () => {
-  it('single linked account uses the institution name', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
-
-    sources.accountResults.value = [linked('Wells Fargo')];
-    await nextTick();
-
+    expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success).toHaveBeenCalledWith({
       title: 'Connected 1 account',
       message: 'Wells Fargo',
     });
   });
 
-  it('multiple linked accounts use a count', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
+  it('fires a single success toast with a count for multiple accounts', () => {
+    const { renderSuccessToast } = usePlaidToasts();
 
-    sources.accountResults.value = [
+    renderSuccessToast([
       linked('Wells Fargo', 'plaid_1'),
       linked('Wells Fargo', 'plaid_2'),
-    ];
-    await nextTick();
+    ]);
 
+    expect(toast.success).toHaveBeenCalledTimes(1);
     expect(toast.success).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Connected 2 accounts' }),
     );
   });
-});
 
-describe('usePlaidToasts — dismissal', () => {
-  it('dismisses results after an all-success toast', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
+  it('only calls toast.success (never danger)', () => {
+    const { renderSuccessToast } = usePlaidToasts();
 
-    sources.accountResults.value = [linked('Wells Fargo')];
-    await nextTick();
+    renderSuccessToast([linked('Wells Fargo')]);
 
-    expect(sources.dismissResults).toHaveBeenCalled();
-  });
-
-  it('dismisses results after an item-rejection toast', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
-
-    sources.itemRejection.value = { reason: 'UNKNOWN', message: 'x' };
-    await nextTick();
-
-    expect(sources.dismissResults).toHaveBeenCalled();
-  });
-
-  it('a Plaid error surfaces an error toast from the CopyEntry, then dismisses it', async () => {
-    const sources = makeSources();
-    usePlaidToasts(sources);
-
-    const copy = { title: 'Bank down', body: 'Try later', retry: 'try-later' };
-    sources.plaidError.value = copy;
-    await nextTick();
-
-    expect(toast.error).toHaveBeenCalledWith({ title: 'Bank down', message: 'Try later' });
-    expect(sources.dismissPlaidError).toHaveBeenCalled();
+    expect(toast.danger).not.toHaveBeenCalled();
   });
 });
 
-describe('fanOutRejectionToasts (demo-only helper)', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
+describe('renderItemRejectionToast', () => {
+  it.each([
+    'IDENTITY_MISMATCH',
+    'SANCTIONS_SCREENING_FAILED',
+    'RISK_THRESHOLD_NOT_MET',
+    'AUTH_NOT_SUPPORTED',
+    'UNKNOWN',
+  ])('fires a danger toast with the mapped copy for reason %s', (reason) => {
+    const { renderItemRejectionToast } = usePlaidToasts();
+    const copy = copyForItemRejection(reason);
+
+    renderItemRejectionToast({ reason, message: 'x' });
+
+    expect(toast.danger).toHaveBeenCalledTimes(1);
+    expect(toast.danger).toHaveBeenCalledWith({ title: copy.title, message: copy.body });
   });
-  afterEach(() => {
-    vi.useRealTimers();
+
+  it('only calls toast.danger (never success)', () => {
+    const { renderItemRejectionToast } = usePlaidToasts();
+
+    renderItemRejectionToast({ reason: 'IDENTITY_MISMATCH', message: 'x' });
+
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+});
+
+describe('renderToastsLists', () => {
+  it('fires a success toast for each linked account and a danger toast for each rejected', () => {
+    const { renderToastsLists } = usePlaidToasts();
+
+    renderToastsLists([
+      linked('Wells Fargo', 'plaid_1'),
+      rejected('DUPLICATE_ACCOUNT', 'plaid_2'),
+      linked('Chase', 'plaid_3'),
+    ]);
+
+    expect(toast.success).toHaveBeenCalledTimes(2);
+    expect(toast.danger).toHaveBeenCalledTimes(1);
   });
 
-  it('staggers one toast per rejected account at index * 300ms', () => {
-    const rejections = [
-      rejected('DUPLICATE_ACCOUNT', 'a'),
-      rejected('UNSUPPORTED_ACCOUNT_TYPE', 'b'),
-      rejected('UNKNOWN', 'c'),
-    ];
+  it('uses the mapped account-rejection copy for a rejected account', () => {
+    const { renderToastsLists } = usePlaidToasts();
+    const copy = copyForAccountRejection('UNSUPPORTED_ACCOUNT_TYPE');
 
-    fanOutRejectionToasts(rejections, toast);
+    renderToastsLists([rejected('UNSUPPORTED_ACCOUNT_TYPE')]);
 
-    // Nothing has fired until timers advance.
-    expect(toast.error).toHaveBeenCalledTimes(0);
+    expect(toast.danger).toHaveBeenCalledWith({ title: copy.title, message: copy.body });
+    // The raw backend message is never surfaced — copy comes from the map.
+    expect(toast.danger).not.toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'raw backend message' }),
+    );
+  });
 
-    vi.advanceTimersByTime(0);
-    expect(toast.error).toHaveBeenCalledTimes(1);
-    // First toast carries the first reason's mapped copy.
-    const firstCopy = copyForAccountRejection('DUPLICATE_ACCOUNT');
-    expect(toast.error).toHaveBeenNthCalledWith(1, {
-      title: firstCopy.title,
-      message: firstCopy.body,
-    });
+  it('fires only success toasts when every account linked', () => {
+    const { renderToastsLists } = usePlaidToasts();
 
-    vi.advanceTimersByTime(300);
-    expect(toast.error).toHaveBeenCalledTimes(2);
+    renderToastsLists([linked('Wells Fargo', 'plaid_1'), linked('Chase', 'plaid_2')]);
 
-    vi.advanceTimersByTime(300);
-    expect(toast.error).toHaveBeenCalledTimes(3);
+    expect(toast.success).toHaveBeenCalledTimes(2);
+    expect(toast.danger).not.toHaveBeenCalled();
+  });
+
+  it('fires only danger toasts when every account was rejected', () => {
+    const { renderToastsLists } = usePlaidToasts();
+
+    renderToastsLists([rejected('DUPLICATE_ACCOUNT', 'a'), rejected('UNKNOWN', 'b')]);
+
+    expect(toast.danger).toHaveBeenCalledTimes(2);
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('fires nothing for an empty list', () => {
+    const { renderToastsLists } = usePlaidToasts();
+
+    renderToastsLists([]);
+
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.danger).not.toHaveBeenCalled();
+  });
+});
+
+describe('derivePresentation', () => {
+  it.each([
+    ['item-rejection', { reason: 'IDENTITY_MISMATCH', message: 'x' }, null, 'item-rejection'],
+    ['no results', null, null, 'none'],
+    ['empty results', null, [], 'none'],
+    ['all linked', null, [linked('WF', 'a')], 'all-success'],
+    ['all rejected', null, [rejected('UNKNOWN', 'a')], 'all-rejected'],
+    ['mixed', null, [linked('WF', 'a'), rejected('UNKNOWN', 'b')], 'partial-success'],
+  ])('classifies %s as %s', (_name, itemRejection, accountResults, expected) => {
+    expect(derivePresentation(itemRejection, accountResults)).toBe(expected);
+  });
+
+  it('item rejection takes precedence over any account results', () => {
+    const state = derivePresentation(
+      { reason: 'UNKNOWN', message: 'x' },
+      [linked('WF', 'a')],
+    );
+    expect(state).toBe('item-rejection');
   });
 });

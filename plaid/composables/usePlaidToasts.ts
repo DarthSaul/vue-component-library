@@ -1,35 +1,24 @@
-import { computed, watch, type Ref } from 'vue';
 import { useDsToast } from '@ds/vue';
 import { copyForItemRejection, copyForAccountRejection } from '../rejectionUI';
-import type { CopyEntry } from '../plaidErrorUI';
-import type { AccountResult, PresentationState } from '../types';
+import type {
+  AccountResult,
+  ItemLevelRejectionReason,
+  PresentationState,
+} from '../types';
 import type { ItemRejectionState } from './usePlaidLink';
 
-// Owns ALL toast routing for the main view. usePlaidLink exposes result
-// state only; this composable turns that state into toasts. It watches a
-// `presentation` state machine plus the plaidError ref and fires the right
-// toast, then dismisses the source state so a toast fires exactly once.
+// usePlaidToasts owns ALL toast emission for the main view. It returns three
+// render functions; the view decides WHEN to call them (driven by the
+// `presentation` state machine below):
 //
-// Routing:
-//   all-success   → success toast, then dismiss
-//   item-rejection → error toast (copyForItemRejection), then dismiss
-//   plaidError     → error toast from the CopyEntry, then dismiss
-//   all-rejected / partial-success → NO toast (the results modal owns those)
+//   renderSuccessToast       — one summary success toast for an all-linked batch
+//   renderItemRejectionToast — one danger toast for an item-level rejection
+//   renderToastsLists        — one toast per account (success per linked,
+//                              danger per rejected)
 
-// The subset of usePlaidLink's return that toast routing depends on.
-export interface PlaidToastSources {
-  itemRejection: Ref<ItemRejectionState | null>;
-  accountResults: Ref<AccountResult[] | null>;
-  plaidError: Ref<CopyEntry | null>;
-  dismissResults: () => void;
-  dismissPlaidError: () => void;
-}
-
-type DsToastApi = ReturnType<typeof useDsToast>;
-
-// Pure classifier — shared with the main view, which uses it to decide
-// whether to show the results modal. Kept side-effect-free so both callers
-// derive the same state from the same inputs.
+// Pure classifier — shared with the main view, which uses it to decide both
+// which toast to render and whether to show the results modal. Side-effect
+// free so every caller derives the same state from the same inputs.
 export function derivePresentation(
   itemRejection: ItemRejectionState | null,
   accountResults: AccountResult[] | null,
@@ -45,80 +34,48 @@ export function derivePresentation(
   return 'partial-success';
 }
 
-function successToastCopy(results: AccountResult[]): { title: string; message?: string } {
-  const linked = results.filter((r) => r.outcome === 'linked');
-  const count = linked.length;
-  const first = linked[0];
-  const institution =
-    first && first.outcome === 'linked' ? first.account.institutionName : undefined;
-
-  return {
-    title: count === 1 ? 'Connected 1 account' : `Connected ${count} accounts`,
-    message: institution,
-  };
-}
-
-export function usePlaidToasts(sources: PlaidToastSources) {
+export function usePlaidToasts() {
   const toast = useDsToast();
 
-  const presentation = computed(() =>
-    derivePresentation(sources.itemRejection.value, sources.accountResults.value),
-  );
+  // One summary success toast for a batch that linked cleanly. Single account
+  // leads with its institution name; multiple leads with the count.
+  function renderSuccessToast(linkedAccounts: AccountResult[]): void {
+    const count = linkedAccounts.length;
+    const first = linkedAccounts[0];
+    const institution =
+      first && first.outcome === 'linked' ? first.account.institutionName : undefined;
 
-  // Result-driven toasts (success + item rejection).
-  watch(presentation, (state) => {
-    if (state === 'all-success') {
-      toast.success(successToastCopy(sources.accountResults.value ?? []));
-      sources.dismissResults();
-      return;
-    }
-
-    if (state === 'item-rejection') {
-      const rejection = sources.itemRejection.value;
-      if (rejection) {
-        const copy = copyForItemRejection(rejection.reason);
-        toast.error({ title: copy.title, message: copy.body });
-      }
-      sources.dismissResults();
-    }
-
-    // all-rejected / partial-success → handled by the results modal.
-  });
-
-  // Plaid SDK error toasts (onExit surfaced a CopyEntry).
-  watch(
-    () => sources.plaidError.value,
-    (copy) => {
-      if (!copy) return;
-      toast.error({ title: copy.title, message: copy.body });
-      sources.dismissPlaidError();
-    },
-  );
-
-  return { presentation };
-}
-
-/**
- * DEMO-ONLY. Not wired into usePlaidToasts by default.
- *
- * Fans out one error toast per rejected account, staggered so they cascade
- * in rather than stacking all at once. Delay is index-based (index * 300ms)
- * — each toast is scheduled at its own offset, not a single constant
- * setTimeout and not a `.forEach(await …)` (which wouldn't actually
- * sequence). Included to show the pattern; the default UX routes multiple
- * rejections to the results modal instead.
- */
-export function fanOutRejectionToasts(
-  rejected: AccountResult[],
-  toast: DsToastApi,
-): void {
-  rejected
-    .filter((r) => r.outcome === 'rejected')
-    .forEach((result, index) => {
-      if (result.outcome !== 'rejected') return;
-      const copy = copyForAccountRejection(result.reason);
-      setTimeout(() => {
-        toast.error({ title: copy.title, message: copy.body });
-      }, index * 300);
+    toast.success({
+      title: count === 1 ? 'Connected 1 account' : `Connected ${count} accounts`,
+      message: institution,
     });
+  }
+
+  // One danger toast for an item-level rejection, using the mapped copy.
+  function renderItemRejectionToast(rejection: {
+    reason: ItemLevelRejectionReason;
+    message: string;
+  }): void {
+    const copy = copyForItemRejection(rejection.reason);
+    toast.danger({ title: copy.title, message: copy.body });
+  }
+
+  // One toast per account: success for each linked, danger for each rejected
+  // (with its mapped copy). Used when the caller wants a per-account breakdown
+  // in toasts rather than a single summary.
+  function renderToastsLists(accounts: AccountResult[]): void {
+    accounts.forEach((account) => {
+      if (account.outcome === 'linked') {
+        toast.success({
+          title: 'Account connected',
+          message: `${account.account.institutionName} •••• ${account.account.accountMask}`,
+        });
+      } else if (account.outcome === 'rejected') {
+        const copy = copyForAccountRejection(account.reason);
+        toast.danger({ title: copy.title, message: copy.body });
+      }
+    });
+  }
+
+  return { renderSuccessToast, renderItemRejectionToast, renderToastsLists };
 }

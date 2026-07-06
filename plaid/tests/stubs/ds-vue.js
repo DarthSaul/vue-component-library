@@ -90,7 +90,7 @@ export const DsToast = defineComponent({
 export function useDsToast() {
   return {
     success: () => '',
-    error: () => '',
+    danger: () => '',
     dismiss: () => {},
   };
 }
