@@ -11,9 +11,8 @@
  * at all.
  *
  * Usage:
- *   node icons/utils/generate-registry.js            # write icons/registry.ts
- *   node icons/utils/generate-registry.js --check    # CI drift check
  *   node icons/utils/generate-registry.js --source ../flat-icons
+ *   node icons/utils/generate-registry.js --source ../flat-icons --check
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -40,8 +39,8 @@ Usage: node icons/utils/generate-registry.js [options]
 Generates icons/registry.ts from the canonical icon set.
 
 Options:
-  -s, --source <dir>  Icon directory (default: icons/flat-icons, then
-                      <repo>/flat-icons)
+  -s, --source <dir>  REQUIRED. Icon directory. Relative paths resolve
+                      against icons/, e.g. --source ../flat-icons
   -o, --out <file>    Output path, relative to icons/ (default: registry.ts)
       --check         Compare against the committed registry and exit non-zero
                       if they differ. Writes nothing. For CI.

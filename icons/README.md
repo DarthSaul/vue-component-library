@@ -72,10 +72,22 @@ Options:
 
 ---
 
-The two scripts below operate on the **canonical** icon set in `flat-icons/`
-(after dedupe). Both are strictly read-only over that directory — neither edits,
-renames nor deletes an SVG. They locate it relative to their own file, not the
-cwd, checking `icons/flat-icons/` then `<repo>/flat-icons/`; `--source` overrides.
+The two scripts below operate on the **canonical** icon set (after dedupe). Both
+are strictly read-only over that directory — neither edits, renames nor deletes
+an SVG.
+
+`--source` is **required**; there is no default and no directory search. A
+relative `--source` resolves against `icons/`, not the cwd, so the same command
+means the same thing from the repo root, from a workspace, or from a CI step —
+`--source ../flat-icons` is `<repo>/flat-icons`. Absolute paths are used as
+given.
+
+The npm scripts below pass `--source ../flat-icons`. If your icon set lives
+elsewhere, edit those scripts, or override per-run:
+
+```bash
+npm run icons:registry -- --source ../some/other/dir
+```
 
 ### `utils/generate-registry.js`
 
@@ -85,6 +97,9 @@ Generates `icons/registry.ts` — the sorted list of icon names plus the
 ```bash
 npm run icons:registry         # write icons/registry.ts
 npm run icons:registry:check   # CI drift check — writes nothing
+
+# or directly, with an explicit source
+node icons/utils/generate-registry.js --source ../flat-icons
 ```
 
 ```ts
@@ -113,6 +128,9 @@ Audits hardcoded `fill`/`stroke` colors and writes
 
 ```bash
 npm run icons:color-audit
+
+# or directly, with an explicit source
+node icons/utils/color-audit.js --source ../flat-icons
 ```
 
 Detection lives in `utils/lib/detect-colors.js` as a pure function, so it can be

@@ -15,41 +15,33 @@ const here = dirname(fileURLToPath(import.meta.url));
 /** The icons/ workspace root — this file lives at icons/utils/lib/. */
 export const iconsRoot = resolve(here, '..', '..');
 
-/** The repository root. */
-export const repoRoot = resolve(iconsRoot, '..');
-
 /** Resolve a user-supplied path against icons/ unless it is already absolute. */
 export function fromIconsRoot(path) {
 	return isAbsolute(path) ? path : resolve(iconsRoot, path);
 }
 
 /**
- * Find flat-icons/. Checked in a fixed order so the result never depends on
- * the cwd: icons/flat-icons first, then a repo-root flat-icons.
+ * Resolve the icon directory from an explicit --source. There is no fallback
+ * and no search: the caller says where the icons are, or the script stops.
+ *
+ * A relative --source is resolved against icons/, not the cwd, so a given
+ * command means the same thing from the repo root, from a workspace, or from a
+ * CI step. Absolute paths are used as given.
  */
 export function resolveIconSource(override) {
-	if (override) {
-		const path = fromIconsRoot(override);
-
-		if (!existsSync(path)) {
-			throw new Error(`Icon directory not found: ${path}`);
-		}
-
-		return path;
+	if (!override) {
+		throw new Error(
+			'Missing required --source <dir>.\n' +
+				'  Relative paths resolve against icons/ ' +
+				'(e.g. --source ../flat-icons for <repo>/flat-icons).',
+		);
 	}
 
-	const candidates = [
-		resolve(iconsRoot, 'flat-icons'),
-		resolve(repoRoot, 'flat-icons'),
-	];
+	const path = fromIconsRoot(override);
 
-	for (const candidate of candidates) {
-		if (existsSync(candidate)) return candidate;
+	if (!existsSync(path)) {
+		throw new Error(`Icon directory not found: ${path}`);
 	}
 
-	throw new Error(
-		`Icon directory not found. Looked in:\n${candidates
-			.map((candidate) => `  ${candidate}`)
-			.join('\n')}\nPass --source <dir> to point somewhere else.`,
-	);
+	return path;
 }

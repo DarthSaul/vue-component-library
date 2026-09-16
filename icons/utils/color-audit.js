@@ -15,7 +15,7 @@
  * directory. The only file it writes is the report.
  *
  * Usage:
- *   node icons/utils/color-audit.js
+ *   node icons/utils/color-audit.js --source ../flat-icons
  *   node icons/utils/color-audit.js --source ../flat-icons --out report.json
  */
 
@@ -47,8 +47,8 @@ Usage: node icons/utils/color-audit.js [options]
 Audits hardcoded fill/stroke colors across the canonical icon set.
 
 Options:
-  -s, --source <dir>  Icon directory (default: icons/flat-icons, then
-                      <repo>/flat-icons)
+  -s, --source <dir>  REQUIRED. Icon directory. Relative paths resolve
+                      against icons/, e.g. --source ../flat-icons
   -o, --out <file>    Report path, relative to icons/
                       (default: currentcolor-remediation.json)
   -h, --help          Show this help
