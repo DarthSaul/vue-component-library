@@ -46,8 +46,10 @@
 	],
 	"devDependencies": {
 		"@vitejs/plugin-vue": "5.2.4",
+		"fast-glob": "^3.3.3",
 		"markdown-it": "^14.1.1",
 		"sass": "^1.94.2",
+		"svgo": "^4.1.0",
 		"typescript": "^5.9.3",
 		"vite": "6.4.1",
 		"vite-plugin-vue-docgen": "^0.3.4",
