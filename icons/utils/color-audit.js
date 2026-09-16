@@ -12,11 +12,12 @@
  *   multi-color            — several distinct colors; assumed intentional, leave alone.
  *
  * Read-only: it never edits, renames or deletes anything in the icon
- * directory. The only file it writes is the report.
+ * directory. The only files it writes are the two reports.
  *
  * Usage:
  *   node icons/utils/color-audit.js --source ../flat-icons
  *   node icons/utils/color-audit.js --source ../flat-icons --out report.json
+ *   node icons/utils/color-audit.js --source ../flat-icons --no-html
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,6 +26,7 @@ import { parseArgs } from 'node:util';
 import fg from 'fast-glob';
 import { CLASSIFICATIONS, detectColors } from './lib/detect-colors.js';
 import { fromIconsRoot, resolveIconSource } from './lib/icon-source.js';
+import { renderColorReport } from './lib/render-color-report.js';
 
 // ─── CLI ────────────────────────────────────────────────────────────────
 
@@ -36,6 +38,11 @@ const { values: args } = parseArgs({
 			short: 'o',
 			default: 'currentcolor-remediation.json',
 		},
+		html: {
+			type: 'string',
+			default: 'currentcolor-remediation.html',
+		},
+		'no-html': { type: 'boolean', default: false },
 		help: { type: 'boolean', short: 'h', default: false },
 	},
 });
@@ -49,8 +56,11 @@ Audits hardcoded fill/stroke colors across the canonical icon set.
 Options:
   -s, --source <dir>  REQUIRED. Icon directory. Relative paths resolve
                       against icons/, e.g. --source ../flat-icons
-  -o, --out <file>    Report path, relative to icons/
+  -o, --out <file>    JSON report path, relative to icons/
                       (default: currentcolor-remediation.json)
+      --html <file>   HTML report path, relative to icons/
+                      (default: currentcolor-remediation.html)
+      --no-html       Skip the HTML report
   -h, --help          Show this help
   `);
 	process.exit(0);
@@ -72,6 +82,7 @@ try {
 }
 
 const outPath = fromIconsRoot(args.out);
+const htmlPath = fromIconsRoot(args.html);
 
 // ─── Audit ──────────────────────────────────────────────────────────────
 
@@ -89,6 +100,9 @@ const counts = {
 };
 
 const entries = [];
+// The HTML report shows every icon, including the ok ones the JSON omits, so
+// the raw markup is kept around to inline.
+const allIcons = [];
 const unreadable = [];
 let warningCount = 0;
 
@@ -107,7 +121,9 @@ for (const file of files) {
 	counts[classification]++;
 	warningCount += warnings.length;
 
-	// Report carries only the icons that need attention.
+	allIcons.push({ path: file, classification, colors, warnings, source });
+
+	// JSON report carries only the icons that need attention.
 	if (classification === CLASSIFICATIONS.OK && warnings.length === 0) continue;
 
 	entries.push({
@@ -140,6 +156,19 @@ const report = {
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
 
+if (!args['no-html']) {
+	mkdirSync(dirname(htmlPath), { recursive: true });
+	writeFileSync(
+		htmlPath,
+		renderColorReport({
+			generatedAt: report.generatedAt,
+			source: report.source,
+			summary: report.summary,
+			icons: allIcons,
+		}),
+	);
+}
+
 // ─── Summary ────────────────────────────────────────────────────────────
 
 const displayOut = displayPath(outPath);
@@ -167,5 +196,10 @@ if (unreadable.length > 0) {
 }
 
 console.log('\n' + '─'.repeat(64));
-console.log(`  Report: ${displayOut}`);
+console.log(`  JSON: ${displayOut}`);
+
+if (!args['no-html']) {
+	console.log(`  HTML: ${displayPath(htmlPath)}`);
+}
+
 console.log();

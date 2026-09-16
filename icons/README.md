@@ -123,15 +123,30 @@ raw line diff. Wire it into CI to catch a registry that has drifted from
 
 ### `utils/color-audit.js`
 
-Audits hardcoded `fill`/`stroke` colors and writes
-`icons/currentcolor-remediation.json`.
+Audits hardcoded `fill`/`stroke` colors and writes two reports:
+`icons/currentcolor-remediation.json` for tooling, and
+`icons/currentcolor-remediation.html` to open in a browser.
 
 ```bash
 npm run icons:color-audit
+open icons/currentcolor-remediation.html
 
 # or directly, with an explicit source
 node icons/utils/color-audit.js --source ../flat-icons
+node icons/utils/color-audit.js --source ../flat-icons --no-html
 ```
+
+The HTML report renders every icon inline next to its detected colors and the
+element/attribute each one sits on, so the mono-vs-multi call can be made by
+eye. It filters by classification (defaulting to "needs attention", which hides
+the `ok` pile), has a background toggle for icons that vanish against white or
+black, and is a single self-contained file — no icon directory needed to view
+it. Rendering lives in `utils/lib/render-color-report.js`.
+
+Each icon's ids and class names are namespaced on the way in. Inlining many
+SVGs into one document puts them in a shared namespace, and exported icons
+collide constantly (`id="a"`, `.st0 { fill: … }`) — without scoping, one icon's
+gradients and CSS rules silently repaint another's.
 
 Detection lives in `utils/lib/detect-colors.js` as a pure function, so it can be
 reused as a CI lint later; the CLI is a thin wrapper over it. It reads both
@@ -155,4 +170,15 @@ would be wrongly excluded from conversion.
 
 Two things are reported as warnings rather than silently passing: a paint value
 that can't be parsed as a color (a CSS variable, or a typo), and the presence of
-a `<style>` block, whose CSS rules this audit does not read.
+a `<style>` block, whose CSS rules this audit does not read. An icon can be
+`ok` and still carry a warning, so the HTML report has a Warnings filter — the
+default view would otherwise hide them.
+
+Options:
+
+| Flag                 | Default                             | Description                          |
+| -------------------- | ----------------------------------- | ------------------------------------ |
+| `-s, --source <dir>` | *required*                          | Icon directory, relative to `icons/` |
+| `-o, --out <file>`   | `currentcolor-remediation.json`     | JSON report path                     |
+| `--html <file>`      | `currentcolor-remediation.html`     | HTML report path                     |
+| `--no-html`          | off                                 | Skip the HTML report                 |
