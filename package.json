@@ -26,6 +26,9 @@
 		"build:ui": "npm run build --workspace=ui",
 		"build:docs": "npm run build --workspace=docs",
 		"preview": "npm run preview --workspace=docs",
+		"icons:registry": "node icons/utils/generate-registry.js",
+		"icons:registry:check": "node icons/utils/generate-registry.js --check",
+		"icons:color-audit": "node icons/utils/color-audit.js",
 		"dev:css-demo": "npm run dev --workspace=css-demo",
 		"build:css-demo": "npm run build --workspace=css-demo"
 	},
