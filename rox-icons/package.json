@@ -1,0 +1,12 @@
+{
+	"name": "@roxbury/icons",
+	"private": true,
+	"type": "module",
+	"exports": "./src/index.js",
+	"scripts": {
+		"generate": "node utils/generate-registry.js && node utils/build-sprite.js",
+		"check": "node utils/generate-registry.js --check && node utils/build-sprite.js --check",
+		"build": "npm run generate && vite build",
+		"postbuild": "node utils/copy-dist-assets.js"
+	}
+}

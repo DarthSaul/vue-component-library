@@ -28,6 +28,25 @@ Implementation rules:
 - **Appended to the end of `<body>`**, not prepended, so consumer CSS relying on `body > :first-child` is unaffected.
 - **Injected during `setup()`**, guarded by `typeof document !== 'undefined'`, so the sprite is present before the first `<use>` paints and the module never throws in a non-DOM context. No module-level side effect on import.
 
+## Change to UI library rollupOptions
+
+```js
+// ui/vite.config.js (lib build)
+export default defineConfig({
+	plugins: [vue()],
+	build: {
+		outDir: 'dist',
+		lib: { entry: 'src/index.js', formats: ['es'], fileName: () => 'roxbury.js' },
+		rollupOptions: {
+			external: ['vue', '@roxbury/icons'],
+			output: {
+				paths: { '@roxbury/icons': './icons/index.js' },
+			},
+		},
+	},
+});
+```
+
 ## Options Considered
 
 ### Option A: Inline auto-injection (chosen)
