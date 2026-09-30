@@ -124,3 +124,9 @@ export const RoxburyIconSprite = {
 		installIconSprite();
 	},
 };
+
+/**
+ *
+ */
+export const SYMBOL_PREFIX = 'rox-';
+export const getSymbolHref = (name) => `#${SYMBOL_PREFIX}${name}`;
