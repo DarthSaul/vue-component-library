@@ -20,26 +20,24 @@ svg.cnb-icon {
 	// that attribute and fill in stroke icons.
 }
 
-// `size` prop. Values are placeholders; use Roxbury's sizing tokens.
-svg.cnb-icon--xs {
-	width: 0.75rem;
-	height: 0.75rem;
-}
-svg.cnb-icon--sm {
-	width: 1rem;
-	height: 1rem;
-}
-svg.cnb-icon--md {
-	width: 1.25rem;
-	height: 1.25rem;
-}
-svg.cnb-icon--lg {
-	width: 1.5rem;
-	height: 1.5rem;
-}
-svg.cnb-icon--xl {
-	width: 2rem;
-	height: 2rem;
+// `size` prop. Same names and pixel values as CnbIcon's `size` prop.
+$cnb-icon-sizes: (
+	'xsmall': 4px,
+	'small': 8px,
+	'medium': 16px,
+	'large': 24px,
+	'2x': 32px,
+	'3x': 40px,
+	'5x': 48px,
+	'7x': 56px,
+	'10x': 64px,
+);
+
+@each $size, $px in $cnb-icon-sizes {
+	svg.cnb-icon--#{$size} {
+		width: $px;
+		height: $px;
+	}
 }
 
 // Legacy CnbIcon raw-SVG mode only: arbitrary imported SVGs, which don't

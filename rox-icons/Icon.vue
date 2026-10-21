@@ -102,6 +102,20 @@ if (isDev) {
 const a11yAttrs = computed(() =>
 	props.label ? { role: 'img', 'aria-label': props.label } : { 'aria-hidden': 'true' },
 );
+
+const sizeToProps = computed(() => {
+	return {
+		xsmall: '4',
+		small: '8',
+		medium: '16',
+		large: '24',
+		'2x': '32',
+		'3x': '40',
+		'5x': '48',
+		'7x': '56',
+		'10x': '64',
+	}[props.size];
+});
 </script>
 
 <template>

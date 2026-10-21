@@ -10,8 +10,11 @@
  */
 import { defineComponent, h } from 'vue';
 
-/** Sizes map to `cnb-icon--<size>` classes in styles/src/components/_Icon.scss. */
-const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'];
+/**
+ * Sizes map to `cnb-icon--<size>` classes in styles/src/components/_Icon.scss.
+ * Same names and pixel values as CnbIcon's `size` prop, so usage carries over.
+ */
+const SIZES = ['xsmall', 'small', 'medium', 'large', '2x', '3x', '5x', '7x', '10x'];
 
 /**
  * Semantic colors. Each sets --rox-icon-svg-color on the icon, so the prop and
