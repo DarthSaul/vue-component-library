@@ -12,12 +12,20 @@ import BellIcon from '@cnodigital/roxbury/rox-icons/bell';
 
 Browse every icon and copy its import from the [icon gallery](#all-icons).
 
+`<CnbIcon>` stays, for SVGs that aren't in the Roxbury icon set. Pass your own SVG component to its `icon` prop:
+
+```vue
+<CnbIcon :icon="MyCustomSvg" label="Custom" />
+```
+
 ### What changed
 
 **Deprecated (removed in v10)**
 
-- `<CnbIcon>` and its `icon` prop, in both forms: Font Awesome names (`icon="bell"`) and imported SVGs (`:icon="BellSvg"`). In development, Roxbury logs a console warning once per page load.
+- Font Awesome icon names in `<CnbIcon>`'s `icon` prop (`icon="bell"`). Use the matching icon component instead. In development, Roxbury logs a console warning once per page load when an icon name is passed.
 - The `color` prop on `<CnbIcon>`.
+
+Passing your own SVG component (`:icon="MyCustomSvg"`) is **not** deprecated.
 
 **Removed (breaking)**
 
@@ -32,22 +40,21 @@ Browse every icon and copy its import from the [icon gallery](#all-icons).
 
 Your app is affected if any of these apply:
 
-- **You use `<CnbIcon>` anywhere.** It still works in v9, but you'll see deprecation warnings. Plan to migrate before v10.
+- **You pass Font Awesome names to `<CnbIcon icon="…">`.** They still work in v9, but you'll see deprecation warnings. Switch to icon components before v10.
 - **You rely on Font Awesome classes (`fa-*`) from `Core.min.css`.** Icons will render blank until you import the Font Awesome stylesheet above or switch to icon components.
 - **You pass `font-awesome`, `spin`, `pulse`, `rotate`, `flip` or `circle` to `<CnbIcon>`.** These props are gone. Remove them, or use Font Awesome classes.
-- **You install vite-svg-loader only to pass SVGs to `<CnbIcon>`.** You can remove it once you've migrated. The new icon components don't need it.
 
-If none of these apply, there's nothing to do.
+If you only pass your own SVGs to `<CnbIcon>`, nothing changes. If one of those SVGs is now in the Roxbury set, consider switching to its icon component.
 
 ### How to migrate
 
 | Before (v8)                              | After (v9)                                        |
 | ---------------------------------------- | ------------------------------------------------- |
 | `<CnbIcon icon="bell" />`                | `<BellIcon />`                                    |
-| `<CnbIcon :icon="BellSvg" />`            | `<BellIcon />`                                    |
 | `<CnbIcon icon="bell" size="large" />`   | `<BellIcon size="large" />`                       |
 | `<CnbIcon icon="bell" color="#c00" />`   | `<BellIcon style="--rox-icon-svg-color: #c00" />` |
 | `<CnbIcon icon="bell" label="Alerts" />` | `<BellIcon label="Alerts" />`                     |
+| `<CnbIcon :icon="MyCustomSvg" />`        | No change                                         |
 
 - **Sizes:** `size` takes the same values as before (`xsmall` to `10x`). Without it, an icon matches the surrounding font size.
 - **Colors:** `color` accepts `primary` or `current` (the surrounding text color). For any other color, set the `--rox-icon-svg-color` CSS variable on the icon or on any parent element.
