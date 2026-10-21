@@ -1,0 +1,49 @@
+// styles/src/components/_Icon.scss
+
+// Every SVG icon: the per-icon components and legacy CnbIcon raw-SVG mode.
+// Matches on `svg.cnb-icon` because generated icons don't carry the legacy
+// `cnb-icon--svg` modifier.
+svg.cnb-icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	flex-shrink: 0;
+	vertical-align: -0.125em;
+
+	// Public API: --rox-icon-svg-color. The default lives in the var() fallback
+	// so a value set on any ancestor still reaches the icon. The `color` prop
+	// sets the same variable on the icon itself.
+	color: var(--rox-icon-svg-color, var(--rox-primary-color));
+
+	// No `fill` here. Generated icons set fill="currentColor" as an attribute
+	// (or keep fill="none" from stroke-based sources). A CSS fill would beat
+	// that attribute and fill in stroke icons.
+}
+
+// `size` prop. Values are placeholders; use Roxbury's sizing tokens.
+svg.cnb-icon--xs {
+	width: 0.75rem;
+	height: 0.75rem;
+}
+svg.cnb-icon--sm {
+	width: 1rem;
+	height: 1rem;
+}
+svg.cnb-icon--md {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+svg.cnb-icon--lg {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+svg.cnb-icon--xl {
+	width: 2rem;
+	height: 2rem;
+}
+
+// Legacy CnbIcon raw-SVG mode only: arbitrary imported SVGs, which don't
+// carry the generated fill attribute. Removed with CnbIcon in v10.
+.cnb-icon--svg {
+	fill: currentColor;
+}
