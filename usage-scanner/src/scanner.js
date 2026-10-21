@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { basename, relative } from 'node:path';
 import { parse as parseSFC } from '@vue/compiler-sfc';
 import { extractImportsFromScript } from './parsers/script-parser.js';
+import { countComponentTags, normalizeTagName } from './parsers/template-parser.js';
 
 /**
  * Scan a repository for component imports from a target package.
@@ -36,15 +37,21 @@ export async function scanRepository(repoPath, { packageName }) {
       const targetMap = category === 'icons' ? icons : components;
       const existing = targetMap.get(imported.componentName) ?? {
         count: 0,
+        templateUses: 0,
         files: [],
       };
 
       existing.count += 1;
-      existing.files.push({
-        path: relPath,
-        localName: imported.localName,
-      });
 
+      const fileEntry = { path: relPath, localName: imported.localName };
+
+      if (category === 'components') {
+        const uses = imported.templateUses ?? 0;
+        existing.templateUses += uses;
+        fileEntry.templateUses = uses;
+      }
+
+      existing.files.push(fileEntry);
       targetMap.set(imported.componentName, existing);
     }
   }
@@ -111,13 +118,18 @@ function extractImportsFromFile(filePath, source, packageName) {
     return extractFromVueSFC(source, packageName);
   }
 
-  // .js / .ts file — parse directly as script
+  // .js / .ts file — parse directly as script; no template, so templateUses stays 0
   const isTS = filePath.endsWith('.ts');
-  return extractImportsFromScript(source, { packageName, isTS });
+  return extractImportsFromScript(source, { packageName, isTS }).map((imp) => ({
+    ...imp,
+    templateUses: 0,
+  }));
 }
 
 /**
- * Parse a .vue SFC and extract imports from its script block(s).
+ * Parse a .vue SFC and extract imports from its script block(s),
+ * then annotate each import with how many times it is used as a tag
+ * in the SFC's template block.
  *
  * @param {string} source
  * @param {string} packageName
@@ -147,6 +159,21 @@ function extractFromVueSFC(source, packageName) {
     results.push(...imports);
   }
 
+  // Count component tag occurrences in the template
+  const tagCounts = countComponentTags(descriptor.template?.content ?? '');
+
+  // Attach templateUses to each import, deduped by localName to avoid
+  // double-counting when the same component is imported in both script blocks
+  const credited = new Set();
+  for (const imp of results) {
+    if (!credited.has(imp.localName)) {
+      imp.templateUses = tagCounts.get(normalizeTagName(imp.localName)) ?? 0;
+      credited.add(imp.localName);
+    } else {
+      imp.templateUses = 0;
+    }
+  }
+
   return results;
 }
 
@@ -168,6 +195,9 @@ function buildReport(repoPath, packageName, components, icons) {
   const sumCounts = (map) =>
     [...map.values()].reduce((sum, c) => sum + c.count, 0);
 
+  const sumTemplateUses = (map) =>
+    [...map.values()].reduce((sum, c) => sum + (c.templateUses ?? 0), 0);
+
   return {
     repoName: basename(repoPath),
     packageName,
@@ -175,6 +205,7 @@ function buildReport(repoPath, packageName, components, icons) {
     summary: {
       uniqueComponents: components.size,
       totalComponentImports: sumCounts(components),
+      totalComponentUses: sumTemplateUses(components),
       uniqueIcons: icons.size,
       totalIconImports: sumCounts(icons),
     },
@@ -188,12 +219,14 @@ function buildReport(repoPath, packageName, components, icons) {
  * @property {string} componentName - The exported name from the package.
  * @property {string} localName - The local binding name (may differ if renamed).
  * @property {string} source - The full import source string.
+ * @property {number} [templateUses] - Times this import's localName appears as a tag in the SFC template.
  */
 
 /**
  * @typedef {object} ComponentUsage
- * @property {number} count
- * @property {{ path: string, localName: string }[]} files
+ * @property {number} count - Total import occurrences across the repo.
+ * @property {number} templateUses - Total template tag occurrences across the repo (components only).
+ * @property {{ path: string, localName: string, templateUses?: number }[]} files
  */
 
 /**
@@ -201,7 +234,7 @@ function buildReport(repoPath, packageName, components, icons) {
  * @property {string} repoName
  * @property {string} packageName
  * @property {string} scannedAt
- * @property {{ uniqueComponents: number, totalComponentImports: number, uniqueIcons: number, totalIconImports: number }} summary
+ * @property {{ uniqueComponents: number, totalComponentImports: number, totalComponentUses: number, uniqueIcons: number, totalIconImports: number }} summary
  * @property {Record<string, ComponentUsage>} components
  * @property {Record<string, ComponentUsage>} icons
  */

@@ -30,7 +30,9 @@
 		"icons:registry:check": "node icons/utils/generate-registry.js --source ../flat-icons --check",
 		"icons:color-audit": "node icons/utils/color-audit.js --source ../flat-icons",
 		"dev:css-demo": "npm run dev --workspace=css-demo",
-		"build:css-demo": "npm run build --workspace=css-demo"
+		"build:css-demo": "npm run build --workspace=css-demo",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"keywords": [
 		"vue",
@@ -49,13 +51,17 @@
 	],
 	"devDependencies": {
 		"@vitejs/plugin-vue": "5.2.4",
+		"@vue/test-utils": "^2.4.11",
 		"fast-glob": "^3.3.3",
+		"jsdom": "^29.1.1",
 		"markdown-it": "^14.1.1",
+		"pinia": "^3.0.4",
 		"sass": "^1.94.2",
 		"svgo": "^4.1.0",
 		"typescript": "^5.9.3",
 		"vite": "6.4.1",
 		"vite-plugin-vue-docgen": "^0.3.4",
+		"vitest": "^4.1.10",
 		"vue": "^3.4.0",
 		"vue-component-meta": "^3.2.5",
 		"vue-router": "^5.0.3"
