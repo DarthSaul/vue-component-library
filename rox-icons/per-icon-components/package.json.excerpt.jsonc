@@ -1,0 +1,23 @@
+// Root package.json (published as @cnodigital/roxbury): the parts that change.
+{
+	// Lets consumers' bundlers drop unused icon modules. Must list stylesheets:
+	// a bare `"sideEffects": false` would also drop `import '…/css'` imports.
+	"sideEffects": ["**/*.css", "**/*.scss"],
+
+	"exports": {
+		"./icons": {
+			"types": "./icons/dist/lib/src/index.d.ts",
+			"import": "./icons/dist/lib/src/index.mjs"
+		},
+		"./icons/*": {
+			"types": "./icons/dist/lib/generated/components/*.d.ts",
+			"import": "./icons/dist/lib/generated/components/*.mjs"
+		}
+		// Remove "./icons/icons-sprite.svg".
+	},
+
+	"scripts": {
+		// Fresh clones and CI get generated components without a manual step.
+		"prepare": "npm run generate -w icons"
+	}
+}
