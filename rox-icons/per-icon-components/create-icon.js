@@ -6,7 +6,7 @@
  * accessibility, coloring) lives in one place instead of 300 generated files.
  * Prop types are declared in create-icon.d.ts; keep the two in sync.
  *
- * Internal: not exported from @cnodigital/roxbury/icons.
+ * Internal: not exported from @cnodigital/roxbury/rox-icons.
  */
 import { defineComponent, h } from 'vue';
 

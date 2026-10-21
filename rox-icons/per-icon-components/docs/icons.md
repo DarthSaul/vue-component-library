@@ -9,7 +9,7 @@ Each icon is its own Vue component, so your app ships only the icons it imports.
 ## Import
 
 ```js
-import CheckCircleIcon from '@cnodigital/roxbury/icons/check-circle'
+import CheckCircleIcon from '@cnodigital/roxbury/rox-icons/check-circle'
 ```
 
 ```vue

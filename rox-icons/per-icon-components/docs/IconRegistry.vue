@@ -5,15 +5,15 @@
  * Docs gallery of every Roxbury icon. Each tile shows the icon and its name;
  * clicking a tile copies the path import for that icon, e.g.
  *
- *   import CheckCircleIcon from '@cnodigital/roxbury/icons/check-circle';
+ *   import CheckCircleIcon from '@cnodigital/roxbury/rox-icons/check-circle';
  *
  * Imports the whole barrel on purpose: the docs page renders every icon, so
  * tree-shaking doesn't apply here. Consumer apps should use path imports.
  */
 import { onBeforeUnmount, ref } from 'vue';
-import * as icons from '@roxbury/icons';
+import * as icons from '@cnodigital/roxbury/rox-icons';
 
-const PACKAGE = '@cnodigital/roxbury/icons';
+const PACKAGE = '@cnodigital/roxbury/rox-icons';
 const COPIED_MS = 1500;
 
 /** check-circle → CheckCircleIcon (same rule as build-components.js) */
