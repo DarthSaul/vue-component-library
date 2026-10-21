@@ -10,7 +10,7 @@
  * Imports the whole barrel on purpose: the docs page renders every icon, so
  * tree-shaking doesn't apply here. Consumer apps should use path imports.
  */
-import { onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import * as icons from '@cnodigital/roxbury/rox-icons';
 
 const PACKAGE = '@cnodigital/roxbury/rox-icons';
@@ -31,7 +31,24 @@ const entries = icons.iconNames.map((name) => {
 		componentName,
 		component: icons[componentName],
 		importLine: `import ${componentName} from '${PACKAGE}/${name}';`,
+		// Matched against the query: "check circle" finds checkmark-circle-filled.
+		searchText: `${name} ${componentName}`.toLowerCase(),
 	};
+});
+
+const query = ref('');
+
+// Every word of the query must appear somewhere in the name, in any order.
+const filtered = computed(() => {
+	const words = query.value.toLowerCase().split(/[\s-]+/).filter(Boolean);
+	if (!words.length) return entries;
+	return entries.filter((entry) => words.every((word) => entry.searchText.includes(word)));
+});
+
+const countText = computed(() => {
+	if (!query.value.trim()) return `${entries.length} icons. Click an icon to copy its import.`;
+	const n = filtered.value.length;
+	return `${n} of ${entries.length} icons match "${query.value.trim()}".`;
 });
 
 if (process.env.NODE_ENV !== 'production') {
@@ -65,10 +82,26 @@ onBeforeUnmount(() => clearTimeout(resetTimer));
 
 <template>
 	<div class="icon-registry">
-		<p class="icon-registry__count">{{ entries.length }} icons. Click an icon to copy its import.</p>
+		<div class="icon-registry__search">
+			<label for="icon-registry-search">Search icons</label>
+			<input
+				id="icon-registry-search"
+				v-model="query"
+				type="search"
+				placeholder="e.g. check, bell, arrow"
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</div>
 
-		<ul class="icon-registry__grid">
-			<li v-for="entry in entries" :key="entry.name">
+		<p class="icon-registry__count" aria-live="polite">{{ countText }}</p>
+
+		<p v-if="!filtered.length" class="icon-registry__empty">
+			No icons match. Try a shorter or different word.
+		</p>
+
+		<ul v-else class="icon-registry__grid">
+			<li v-for="entry in filtered" :key="entry.name">
 				<button
 					type="button"
 					class="icon-registry__tile"
