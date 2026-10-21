@@ -31,7 +31,11 @@ const props = defineProps({
 
     <section class="dashboard-section">
       <h2 class="section-title">Components</h2>
-      <UsageTable :entries="report.components" empty-message="No components found." />
+      <UsageTable
+        :entries="report.components"
+        :show-template-uses="true"
+        empty-message="No components found."
+      />
     </section>
 
     <section class="dashboard-section">

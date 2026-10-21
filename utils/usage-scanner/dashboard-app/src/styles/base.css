@@ -318,3 +318,12 @@ body {
   font-family: var(--font-mono);
   color: var(--color-text);
 }
+
+.file-uses {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+}
+
+.col-uses {
+  color: var(--color-success);
+}
