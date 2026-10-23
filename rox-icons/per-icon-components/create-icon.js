@@ -72,7 +72,7 @@ export function createIcon(name, svgAttrs, children) {
 			color: {
 				type: String,
 				default: undefined,
-				validator: (value) => value in COLORS,
+				validator: (value) => Object.hasOwn(COLORS, value),
 			},
 		},
 		setup(props, { attrs }) {
