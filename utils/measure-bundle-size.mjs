@@ -2,59 +2,58 @@
 /**
  * Roxbury consumer bundle-size benchmark.
  *
- * For each component, builds a minimal production app ("empty App.vue that renders one
- * component") with the same bundler consumers use (Vite 8 / Rolldown + @vitejs/plugin-vue),
- * and reports the size DELTA over a baseline app that renders nothing.
+ * Automates the manual process: "put one component in App.vue, run `vite build`, read the sizes."
+ *
+ * Run from the fixture app (e.g. analyze/fixtures/bundle-size-spa). For each component the script
+ * builds the fixture with ITS OWN vite.config, index.html and main.js, replacing only the
+ * contents of src/App.vue in memory (the file on disk is never touched). It then sums every
+ * emitted JS and CSS file and reports:
+ *   - total: what the browser downloads for that app (all chunks + CSS)
+ *   - delta: total minus a baseline build whose App.vue renders nothing
+ *
+ * Sizes use the same units as Vite's build output: kB = 1000 bytes, gzip at zlib's default level.
  *
  * Each component is measured two ways:
- *   - via the barrel:   import { CnbX } from '@cnodigital/roxbury/ui'
- *   - via the subpath:  '@cnodigital/roxbury/<component-name>' (ui/dist/<component-name>/index.mjs)
- * If those two numbers diverge, tree-shaking through the barrel is leaking (sideEffects,
- * top-level code, shared chunk wiring) — that's a bug worth catching.
- *
- * Run from a consumer-like fixture (e.g. analyze/) that has @cnodigital/roxbury installed
- * from a packed tarball or the registry — never from workspace source — so the exports map,
- * sideEffects flag and dist output are exactly what app teams get.
+ *   - via the barrel:  import { CnbX } from '@cnodigital/roxbury/ui'
+ *   - via the subpath: '@cnodigital/roxbury/<component-name>' (ui/dist/<component-name>/index.mjs)
+ * If those diverge, tree-shaking through the barrel is leaking.
  *
  * Usage:
- *   node measure-bundle-size.mjs --label v9.0.0-local
- *   node measure-bundle-size.mjs --label v8.0.0 --only autocomplete,input
+ *   node measure-bundle-size.mjs --label v9-local
+ *   node measure-bundle-size.mjs --label v8.0.0 --only button-base,account-card
  */
 import { build } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { gzipSync, brotliCompressSync, constants as zlib } from 'node:zlib'
+import { gzipSync, brotliCompressSync } from 'node:zlib'
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
 const { values: args } = parseArgs({
   options: {
     label: { type: 'string', default: 'local' },
     out: { type: 'string', default: 'reports' },
-    only: { type: 'string' }, // comma-separated subpaths
+    only: { type: 'string' }, // comma-separated component folder names
+    app: { type: 'string', default: 'src/App.vue' }, // the file whose contents get swapped
   },
 })
 
-// ---------------------------------------------------------------------------
-// Config — adjust to match Roxbury's actual export shape
-// ---------------------------------------------------------------------------
 const PKG = '@cnodigital/roxbury'
 const ROOT = process.cwd()
+const APP_FILE = resolve(ROOT, args.app)
 
-// Core.min.css is mandatory for every consumer, so it belongs in the baseline,
-// not in any one component's delta. Point this at the real CSS export.
-const CORE_CSS_IMPORT = `import '${PKG}/css/Core.min.css'`
+if (!existsSync(APP_FILE)) {
+  console.error(`Can't find ${APP_FILE}. Run this from the fixture app, or pass --app.`)
+  process.exit(1)
+}
 
-// 'account-card' -> 'CnbAccountCard', 'input-base' -> 'CnbInputBase'.
+// 'account-card' -> 'CnbAccountCard', 'button-base' -> 'CnbButtonBase'.
 const toExportName = (dir) =>
   'Cnb' + dir.split(/[-_]/).map((p) => p[0].toUpperCase() + p.slice(1)).join('')
 
 // ---------------------------------------------------------------------------
 // Discovery: every ui/dist/<component-name>/index.mjs in the INSTALLED package
-// whose derived name (CnbXxx) is also exported from the barrel. The barrel check
-// filters out non-component dist folders (shared chunks, composables, utils) and
-// reports any component folder the barrel forgot to export.
+// whose derived name is also exported from the barrel.
 // ---------------------------------------------------------------------------
 const PKG_DIR = join(ROOT, 'node_modules', PKG)
 const DIST_DIR = join(PKG_DIR, 'ui', 'dist')
@@ -75,53 +74,64 @@ for (const dir of candidateDirs) {
 }
 
 // ---------------------------------------------------------------------------
-// Build + measure
+// App.vue variants — exactly what you'd type by hand.
 // ---------------------------------------------------------------------------
-const appSource = (importLine, componentName) => `
-import { createApp, h } from 'vue'
-${CORE_CSS_IMPORT}
-${importLine}
-createApp({ render: () => ${componentName ? `h(${componentName})` : 'null'} }).mount('#app')
+const baselineApp = `<template><div /></template>\n`
+
+const barrelApp = (name) => `<script setup>
+import { ${name} } from '${PKG}/ui'
+</script>
+<template><${name} /></template>
 `
 
-const virtualEntry = (code) => ({
-  name: 'roxbury-size-virtual-entry',
-  resolveId: (id) => (id === 'virtual:entry' ? '\0virtual:entry' : null),
-  load: (id) => (id === '\0virtual:entry' ? code : null),
+// Works whether the per-component entry uses a named or a default export.
+const subpathApp = (name, subpath) => `<script setup>
+import * as M from '${PKG}/${subpath}'
+const ${name} = M.${name} ?? M.default
+</script>
+<template><${name} /></template>
+`
+
+// Serves the generated source in place of src/App.vue; @vitejs/plugin-vue (from the
+// fixture's own config) then compiles it as if it were on disk.
+const swapApp = (source) => ({
+  name: 'roxbury-size-swap-app',
+  enforce: 'pre',
+  load(id) {
+    if (id.split('?')[0] === APP_FILE && !id.includes('?')) return source
+  },
 })
 
+// ---------------------------------------------------------------------------
+// Build + measure
+// ---------------------------------------------------------------------------
 const sizesOf = (buf) => ({
   raw: buf.length,
-  gzip: gzipSync(buf, { level: 9 }).length,
-  brotli: brotliCompressSync(buf, { params: { [zlib.BROTLI_PARAM_QUALITY]: 11 } }).length,
+  gzip: gzipSync(buf).length, // zlib default level, same as Vite's report
+  brotli: brotliCompressSync(buf).length,
 })
-
 const add = (a, b) => ({ raw: a.raw + b.raw, gzip: a.gzip + b.gzip, brotli: a.brotli + b.brotli })
 const sub = (a, b) => ({ raw: a.raw - b.raw, gzip: a.gzip - b.gzip, brotli: a.brotli - b.brotli })
 const zero = () => ({ raw: 0, gzip: 0, brotli: 0 })
 
-async function measure(code) {
+async function measure(appSource) {
   const result = await build({
-    configFile: false,
-    root: ROOT,
+    root: ROOT, // picks up the fixture's vite.config, index.html and main.js
     mode: 'production',
     logLevel: 'silent',
-    plugins: [vue(), virtualEntry(code)],
-    build: {
-      write: false,
-      modulePreload: false,
-      reportCompressedSize: false,
-      rolldownOptions: { input: 'virtual:entry' },
-    },
+    plugins: [swapApp(appSource)],
+    resolve: { dedupe: ['vue'] },
+    build: { write: false, reportCompressedSize: false },
   })
 
-  const totals = { js: zero(), css: zero() }
+  const totals = { js: zero(), css: zero(), files: [] }
   for (const out of [result].flat()) {
     for (const file of out.output) {
-      const kind = file.fileName.endsWith('.css') ? 'css' : file.fileName.endsWith('.js') ? 'js' : null
-      if (!kind) continue // fonts/images are fetched lazily; track them separately if needed
-      const content = file.type === 'chunk' ? file.code : file.source
-      totals[kind] = add(totals[kind], sizesOf(Buffer.from(content)))
+      const kind = file.fileName.endsWith('.css') ? 'css' : /\.m?js$/.test(file.fileName) ? 'js' : null
+      if (!kind) continue // html, fonts, images
+      const size = sizesOf(Buffer.from(file.type === 'chunk' ? file.code : file.source))
+      totals[kind] = add(totals[kind], size)
+      totals.files.push({ file: file.fileName, ...size })
     }
   }
   totals.total = add(totals.js, totals.css)
@@ -130,25 +140,24 @@ async function measure(code) {
 
 console.log(`Measuring ${components.length} components from ${PKG}@${pkg.version} (${args.label})`)
 
-const baseline = await measure(appSource('', null))
+const baseline = await measure(baselineApp)
 const results = []
 
 for (const { subpath, name } of components) {
   try {
-    const viaBarrel = await measure(appSource(`import { ${name} } from '${PKG}/ui'`, name))
-    // Works whether the per-component entry uses a named or a default export;
-    // static member access on a namespace import still tree-shakes.
-    const viaSubpath = await measure(
-      appSource(`import * as M from '${PKG}/${subpath}'\nconst ${name} = M.${name} ?? M.default`, name),
-    )
+    const viaBarrel = await measure(barrelApp(name))
+    const viaSubpath = await measure(subpathApp(name, subpath))
     const delta = {
       js: sub(viaBarrel.js, baseline.js),
       css: sub(viaBarrel.css, baseline.css),
       total: sub(viaBarrel.total, baseline.total),
     }
-    const barrelLeak = viaBarrel.total.gzip - viaSubpath.total.gzip
-    results.push({ component: name, subpath, delta, viaBarrel, viaSubpath, barrelLeakGzip: barrelLeak })
-    console.log(`  ✓ ${name.padEnd(28)} +${(delta.total.gzip / 1024).toFixed(2)} KB gz`)
+    const barrelLeakGzip = viaBarrel.js.gzip - viaSubpath.js.gzip
+    results.push({ component: name, subpath, delta, viaBarrel, viaSubpath, barrelLeakGzip })
+    console.log(
+      `  ✓ ${name.padEnd(28)} +${(delta.js.gzip / 1000).toFixed(2)} kB JS gz` +
+        `  (app JS ${(viaBarrel.js.gzip / 1000).toFixed(2)} kB)`,
+    )
   } catch (err) {
     results.push({ component: name, subpath, error: String(err.message ?? err) })
     console.log(`  ✗ ${name.padEnd(28)} ${err.message}`)
@@ -156,35 +165,38 @@ for (const { subpath, name } of components) {
 }
 
 // ---------------------------------------------------------------------------
-// Reports: JSON (for diffing / CI / history) + Markdown (for Confluence)
+// Reports: JSON (diffing / CI / history, includes per-file sizes) + Markdown (Confluence)
 // ---------------------------------------------------------------------------
 const report = {
   package: PKG,
   version: pkg.version,
   label: args.label,
   measuredAt: new Date().toISOString(),
-  bundler: 'vite (rolldown) + @vitejs/plugin-vue, production mode',
+  method: "fixture app's own Vite config; src/App.vue swapped per component; all JS + CSS summed",
+  units: 'bytes (kB in markdown = 1000 bytes, matching Vite)',
   baseline,
   components: results,
 }
 
-const kb = (bytes) => (bytes / 1024).toFixed(2)
+const kB = (bytes) => (bytes / 1000).toFixed(2)
 const rows = results
   .filter((r) => !r.error)
-  .sort((a, b) => b.delta.total.gzip - a.delta.total.gzip)
-  .map((r) =>
-    `| ${r.component} | ${kb(r.delta.js.gzip)} | ${kb(r.delta.css.gzip)} | **${kb(r.delta.total.gzip)}** | ${kb(r.delta.total.brotli)} | ${kb(r.viaBarrel.total.gzip)} | ${Math.abs(r.barrelLeakGzip) > 100 ? `⚠️ ${kb(r.barrelLeakGzip)}` : '—'} |`,
+  .sort((a, b) => b.delta.js.gzip - a.delta.js.gzip)
+  .map(
+    (r) =>
+      `| ${r.component} | **${kB(r.delta.js.gzip)}** | ${kB(r.delta.js.raw)} | ${kB(r.viaBarrel.js.gzip)} | ${Math.abs(r.barrelLeakGzip) > 100 ? `⚠️ +${kB(r.barrelLeakGzip)}` : '—'} |`,
   )
 
-const markdown = `# Roxbury bundle cost — ${PKG}@${pkg.version} (${args.label})
+const markdown = `# Roxbury JS bundle cost — ${PKG}@${pkg.version} (${args.label})
 
-Measured ${report.measuredAt}. Minimal production app rendering one component, built with ${report.bundler}.
-"Delta" = app size minus a baseline app (Vue + Core.min.css, renders nothing).
+Measured ${report.measuredAt}. Each row is the fixture app built with only that component in App.vue.
+JavaScript only (all emitted JS chunks summed); CSS is excluded here but recorded in the JSON report.
+"Δ" = that build minus a baseline build whose App.vue renders nothing. kB = 1000 bytes.
 
-Baseline: ${kb(baseline.total.gzip)} KB gzip (${kb(baseline.js.gzip)} JS + ${kb(baseline.css.gzip)} CSS)
+Baseline app JS: ${kB(baseline.js.gzip)} kB gzip
 
-| Component | Δ JS gz (KB) | Δ CSS gz (KB) | Δ Total gz (KB) | Δ Total br (KB) | Full app gz (KB) | Barrel vs subpath |
-|---|---|---|---|---|---|---|
+| Component | Δ JS gzip (kB) | Δ JS minified (kB) | App JS gzip (kB) | Barrel vs subpath (JS) |
+|---|---|---|---|---|
 ${rows.join('\n')}
 `
 
